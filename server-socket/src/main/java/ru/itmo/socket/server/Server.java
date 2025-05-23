@@ -2,6 +2,12 @@ package ru.itmo.socket.server;
 
 import ru.itmo.socket.common.entity.Message;
 import ru.itmo.socket.common.util.SocketContext;
+import ru.itmo.socket.server.commands.Command;
+import ru.itmo.socket.server.commands.CommandsContext;
+import ru.itmo.socket.server.commands.impl.CommandHistory;
+import ru.itmo.socket.server.commands.impl.ExitCommand;
+import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
+import ru.itmo.socket.server.manager.XmlCollectionLoader;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -9,6 +15,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Server {
 
@@ -51,4 +58,34 @@ public class Server {
             e.printStackTrace();
         }
     }
+
+
+    public void prevMain(){
+        LabWorkTreeSetManager manager = LabWorkTreeSetManager.getInstance();
+        new XmlCollectionLoader(manager, "collection.txt").load();
+        run();
+    }
+
+
+    public void run() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Добро пожаловать в приложение! Введите 'help' для получения списка команд.");
+
+        while (true) {
+            System.out.print("> ");
+            String commandName = scanner.nextLine().trim();
+            Command command = CommandsContext.getCommand(commandName);
+
+            if (command != null) {
+                command.execute();
+                CommandHistory.addCommand(commandName);
+                if (command instanceof ExitCommand) {
+                    break;
+                }
+            } else {
+                System.out.println("Команда не найдена! Введите 'help' для получения списка команд.");
+            }
+        }
+    }
+
 }
