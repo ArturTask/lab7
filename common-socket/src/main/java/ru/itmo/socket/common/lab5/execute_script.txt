@@ -1,0 +1,4 @@
+add
+help
+history
+exit
