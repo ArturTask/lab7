@@ -3,6 +3,7 @@ package ru.itmo.socket.server;
 import ru.itmo.socket.common.entity.Message;
 import ru.itmo.socket.common.util.SocketContext;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -19,8 +20,8 @@ public class Server {
 
             while (true) {
                 try (Socket clientSocket = serverSocket.accept();
-                     ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
-                     ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream())) {
+                     ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
+                     ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream())) {
 
                     System.out.println("Клиент подключился: " + clientSocket.getInetAddress());
 
@@ -37,12 +38,17 @@ public class Server {
                     oos.flush();
                     System.out.println("Отправлено клиенту: " + serverResponse);
 
-                } catch (ClassNotFoundException e) {
+                }
+                catch (EOFException eofException){
+                    System.err.println("Клиент неожиданно прекратил соединение, не удалось прочитать команду");
+                }
+                catch (ClassNotFoundException e) {
                     System.err.println("Ошибка при чтении объекта: " + e.getMessage());
                 }
             }
         } catch (IOException e) {
             System.err.println("Ошибка сервера: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
