@@ -1,6 +1,6 @@
 package ru.itmo.socket.server.commands.impl;
 
-import ru.itmo.socket.server.commands.Command;
+import ru.itmo.socket.server.commands.ServerCommand;
 import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
 import ru.itmo.socket.common.entity.LabWork;
 import ru.itmo.socket.common.entity.Person;
@@ -8,24 +8,21 @@ import ru.itmo.socket.common.entity.Person;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.time.format.DateTimeFormatter;
-import java.util.Scanner;
 import java.util.TreeSet;
 
 /**
  * Команда для сохранения коллекции LabWork в XML-файл.
  */
-public class SaveCommand implements Command {
+public class SaveCommand implements ServerCommand {
 
     @Override
-    public void execute() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Введите имя файла для сохранения коллекции: ");
-        String fileName = scanner.nextLine().trim();
-
+    public void execute(ObjectOutputStream oos, Object... args) throws IOException {
+        String fileName = String.valueOf(args[0]);
         TreeSet<LabWork> labWorks = LabWorkTreeSetManager.getInstance().getAllElements();
         if (labWorks.isEmpty()) {
-            System.out.println("Коллекция пуста. Нечего сохранять.");
+            oos.writeUTF("Коллекция пуста. Нечего сохранять.");
             return;
         }
 
@@ -54,9 +51,9 @@ public class SaveCommand implements Command {
                 writer.write("  </LabWork>\n");
             }
             writer.write("</LabWorks>\n");
-            System.out.println("Коллекция успешно сохранена в файл: " + fileName);
+            oos.writeUTF("Коллекция успешно сохранена в файл: " + fileName);
         } catch (IOException e) {
-            System.out.println("Ошибка при сохранении коллекции: " + e.getMessage());
+            oos.writeUTF("Ошибка при сохранении коллекции: " + e.getMessage());
         }
     }
 

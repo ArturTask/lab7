@@ -1,12 +1,15 @@
 package ru.itmo.socket.server.commands.impl;
 
-import ru.itmo.socket.server.commands.Command;
+import ru.itmo.socket.server.commands.ServerCommand;
 import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
 
-public class ClearCommand implements Command {
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+
+public class ClearCommand implements ServerCommand {
     @Override
-    public void execute() {
+    public void execute(ObjectOutputStream oos, Object... args) throws IOException {
         LabWorkTreeSetManager.getInstance().clear();
-        System.out.println("Коллекция очищена.");
+        oos.writeUTF("Коллекция очищена.");
     }
 }

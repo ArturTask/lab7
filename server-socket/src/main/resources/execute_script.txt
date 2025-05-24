@@ -1,4 +1,5 @@
-add
 help
-history
+show
+add {"id":777,"name":"temporaryName","coordinates":{"x":0.0,"y":0.0},"minimalPoint":1,"difficulty":"NORMAL","author":{"name":"temporaryName","birthday":"2025-05-24T11:08:22.476312+03:00","height":1.0,"weight":1.0,"eyeColor":"BROWN"},"creationDate":"2025-05-24"}
+show
 exit

@@ -30,7 +30,8 @@ public class XmlCollectionLoader {
      */
     public void load() {
         try {
-            File xmlFile = new File(xmlFilePath);
+
+            File xmlFile = new File(XmlCollectionLoader.class.getClassLoader().getResource(xmlFilePath).getFile());
             if (!xmlFile.exists()) {
                 System.out.println("XML-файл не найден: " + xmlFilePath);
                 return;

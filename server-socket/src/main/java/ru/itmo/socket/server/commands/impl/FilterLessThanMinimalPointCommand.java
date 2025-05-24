@@ -1,25 +1,30 @@
 package ru.itmo.socket.server.commands.impl;
 
-import ru.itmo.socket.server.commands.Command;
-import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
 import ru.itmo.socket.common.entity.LabWork;
+import ru.itmo.socket.server.commands.ServerCommand;
+import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.List;
-import java.util.Scanner;
 
-public class FilterLessThanMinimalPointCommand implements Command {
+import static ru.itmo.socket.server.commands.impl.CommandHistory.MAX_HISTORY_SIZE;
+
+public class FilterLessThanMinimalPointCommand implements ServerCommand {
     @Override
-    public void execute() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Введите значение minimalPoint: ");
-        double minimalPoint = Double.parseDouble(scanner.nextLine().trim());
-
+    public void execute(ObjectOutputStream oos, Object... args) throws IOException {
+        double minimalPoint = Double.parseDouble(String.valueOf(args[0]));
         List<LabWork> filtered = LabWorkTreeSetManager.getInstance().filterLessThanMinimalPoint(minimalPoint);
         if (filtered.isEmpty()) {
-            System.out.println("Нет элементов с minimalPoint меньше " + minimalPoint);
+            oos.writeUTF("Нет элементов с minimalPoint меньше " + minimalPoint);
         } else {
-            filtered.forEach(System.out::println);
+            StringBuilder answer = new StringBuilder("Последние " + MAX_HISTORY_SIZE + " команд:\n");
+            for (LabWork lab : filtered) {
+                answer.append(lab).append("\n");
+            }
+            oos.writeUTF(answer.toString());
         }
+
     }
 }
 

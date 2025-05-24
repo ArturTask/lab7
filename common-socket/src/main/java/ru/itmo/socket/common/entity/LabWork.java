@@ -1,16 +1,24 @@
 package ru.itmo.socket.common.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public class LabWork implements Comparable<LabWork> {
-    private static long lastGeneratedId = 0;
+@NoArgsConstructor
+@Getter
+@Setter
+public class LabWork implements Comparable<LabWork>, Serializable {
+    private static long lastGeneratedId = 3;
     private long id;
     private String name;
     private Coordinates coordinates;
     private long minimalPoint;
     private Difficulty difficulty;
     private Person author;
-    private final LocalDate creationDate;
+    private LocalDate creationDate;
 
 
     public LabWork(String name, Coordinates coordinates, long minimalPoint, Difficulty difficulty, Person author) {
@@ -45,7 +53,7 @@ public class LabWork implements Comparable<LabWork> {
 
     @Override
     public int compareTo(LabWork labWork) {
-        return Long.compare(this.minimalPoint, labWork.minimalPoint);
+        return Long.compare(this.id, labWork.id);
     }
 
     public void setId(long id) {

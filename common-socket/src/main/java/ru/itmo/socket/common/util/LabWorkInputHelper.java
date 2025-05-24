@@ -1,4 +1,4 @@
-package ru.itmo.socket.server.commands.impl;
+package ru.itmo.socket.common.util;
 
 import ru.itmo.socket.common.entity.*;
 
@@ -7,13 +7,18 @@ import java.util.Scanner;
 
 public class LabWorkInputHelper {
 
-    // Основной публичный метод, который собирает все части объекта LabWork.
     public static LabWork readLabWork(Scanner scanner) {
+        return readLabWork(scanner, false);
+    }
 
-        // Создаём временный объект, чтобы иметь исходные значения.
-        LabWork labWork = new LabWork("temporaryName", new Coordinates(0, 0), 1, Difficulty.NORMAL,
-                new Person("temporaryName", ZonedDateTime.now(), 1f, 1f, Color.BROWN));
+    // Основной публичный метод, который собирает все части объекта LabWork.
+    public static LabWork readLabWork(Scanner scanner, boolean update) {
 
+        LabWork labWork = new LabWork();
+
+        if (update) {
+            labWork.setId(inputId(scanner));
+        }
         labWork.setName(inputName(scanner));
         labWork.setCoordinates(inputCoordinates(scanner));
         labWork.setMinimalPoint(inputMinimalPoint(scanner));
@@ -21,6 +26,25 @@ public class LabWorkInputHelper {
         labWork.setAuthor(inputAuthor(scanner));
 
         return labWork;
+    }
+
+    private static long inputId(Scanner scanner) {
+        while (true) {
+            try {
+                System.out.println("Введите id");
+                String input = scanner.nextLine().trim();
+
+                if (input.isEmpty() || input.equals("null")) {
+                    throw new IllegalArgumentException("Введено пустое значение или 'null'");
+                }
+
+                return Long.parseLong(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Ошибка: введены не цифры. Попробуйте еще раз.");
+            } catch (Exception e) {
+                System.out.println("Ошибка: " + e.getMessage() + ". Попробуйте еще раз.");
+            }
+        }
     }
 
     // Чтение названия LabWork.

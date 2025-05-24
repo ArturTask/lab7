@@ -1,6 +1,11 @@
 package ru.itmo.socket.common.entity;
 
-public enum Difficulty {
+import lombok.Getter;
+
+import java.io.Serializable;
+
+@Getter
+public enum Difficulty implements Serializable {
     NORMAL,
     IMPOSSIBLE,
     INSANE,

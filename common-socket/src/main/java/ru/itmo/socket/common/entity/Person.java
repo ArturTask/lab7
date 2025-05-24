@@ -1,8 +1,16 @@
 package ru.itmo.socket.common.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 
-public class Person {
+@NoArgsConstructor
+@Getter
+@Setter
+public class Person implements Serializable {
     private String name;
     private ZonedDateTime birthday;
     private float height;

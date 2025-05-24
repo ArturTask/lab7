@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LabWorks>
+  <LabWork>
+    <id>1</id>
+    <name>Лаб1</name>
+    <minimalPoint>50</minimalPoint>
+    <difficulty>NORMAL</difficulty>
+    <coordinates>
+      <x>10.5</x>
+      <y>20.0</y>
+    </coordinates>
+    <author>
+      <name>Казакова Елена</name>
+2000-01-15T10:00:00+03:00</birthday>
+      <height>175.0</height>
+      <weight>70.5</weight>
+      <eyeColor>GREEN</eyeColor>
+    </author>
+  </LabWork>
+  <LabWork>
+    <id>2</id>
+    <name>Лаб2</name>
+    <minimalPoint>30</minimalPoint>
+    <difficulty>IMPOSSIBLE</difficulty>
+    <coordinates>
+      <x>5.0</x>
+      <y>-3.2</y>
+    </coordinates>
+    <author>
+      <name>Вернер Кристина</name>
+1998-07-10T14:30:00+03:00</birthday>
+      <height>162.5</height>
+      <weight>60.0</weight>
+      <eyeColor>RED</eyeColor>
+    </author>
+  </LabWork>
+  <LabWork>
+    <id>3</id>
+    <name>Лаб3</name>
+    <minimalPoint>75</minimalPoint>
+    <difficulty>INSANE</difficulty>
+    <coordinates>
+      <x>-1.1</x>
+      <y>42.7</y>
+    </coordinates>
+    <author>
+      <name>Агаларова Айсел</name>
+2001-11-05T08:15:00+03:00</birthday>
+      <height>180.0</height>
+      <weight>80.0</weight>
+      <eyeColor>BROWN</eyeColor>
+    </author>
+  </LabWork>
+</LabWorks>

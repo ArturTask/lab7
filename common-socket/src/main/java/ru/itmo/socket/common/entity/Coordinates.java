@@ -1,6 +1,15 @@
 package ru.itmo.socket.common.entity;
 
-public class Coordinates {
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.io.Serializable;
+
+@NoArgsConstructor
+@Setter
+@Getter
+public class Coordinates implements Serializable {
     private float x;
     private float y;
 
