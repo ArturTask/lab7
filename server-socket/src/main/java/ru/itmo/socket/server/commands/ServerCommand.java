@@ -16,6 +16,11 @@ public interface ServerCommand {
         return 1;
     }
 
+    /**
+     *
+     * @return Тип аргумента (если аргумент используется в команде) это нужно для команды execute_script
+     * чтобы команда прочитала из файла arg (аргумент) для команды В ФАЙЛЕ
+     */
     default Class<?> getArgType() {
         return String.class; // по умолчанию String (вообще может и не быть параметров)
     }

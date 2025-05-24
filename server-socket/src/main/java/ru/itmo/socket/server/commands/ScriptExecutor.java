@@ -57,7 +57,7 @@ public class ScriptExecutor {
                     mapper.registerModule(new JavaTimeModule());
                     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-                    // map if not string argument!
+                    // map from json if not string argument!
                     Class<?> argType = cmd.getArgType();
                     if (argType != String.class) {
                         objArg = mapper.readValue(rawArgFromFile, argType);

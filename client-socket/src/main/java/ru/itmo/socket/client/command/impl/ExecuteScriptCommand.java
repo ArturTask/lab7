@@ -10,8 +10,7 @@ public class ExecuteScriptCommand implements ClientCommand {
     @Override
     public Optional<Object> preProcess(Scanner scanner) {
         System.out.print("Введите имя файла скрипта: ");
-        Scanner sc = new Scanner(System.in);
-        String fileName = sc.nextLine().trim();
+        String fileName = scanner.nextLine().trim();
         return Optional.of(fileName);
     }
 }

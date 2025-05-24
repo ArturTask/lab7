@@ -68,8 +68,8 @@ public class Client {
 
             // Получаем ответ от сервера, вначале количество строк, потом сами строки
             // (это появилось из-за скриптов (команда execute_script), если скрипт, то там с сервера приходит несколько строк)
-            int count = Integer.parseInt(ois.readUTF());
-            for (int i = 0; i < count; i++) {
+            int responseQuantity = Integer.parseInt(ois.readUTF());
+            for (int i = 0; i < responseQuantity; i++) {
                 String response = ois.readUTF();
                 System.out.println("Строка #" + (i + 1) + ": \n");
                 System.out.println("Получено от сервера: " + response);
