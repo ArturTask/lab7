@@ -6,6 +6,9 @@ import ru.itmo.socket.common.exception.AppCommandNotFoundException;
 
 import java.util.Arrays;
 
+/**
+ * Все доступные команды для приложения
+ */
 @AllArgsConstructor
 @Getter
 public enum AppCommand {
@@ -28,6 +31,12 @@ public enum AppCommand {
     ;
 
     private final String value;
+
+    /**
+     *
+     * @param commandName string name of command from console
+     * @return enum value of command
+     */
 
     public static AppCommand getByStringValue(String commandName) {
         return Arrays.stream(AppCommand.values())

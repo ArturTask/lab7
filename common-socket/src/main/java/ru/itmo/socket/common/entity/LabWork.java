@@ -31,7 +31,7 @@ public class LabWork implements Comparable<LabWork>, Serializable {
         setAuthor(author);
     }
 
-    private long generateId() {
+    public static long generateId() {
         return ++lastGeneratedId;
     }
 

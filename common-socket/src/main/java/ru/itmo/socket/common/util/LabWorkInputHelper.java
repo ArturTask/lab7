@@ -19,6 +19,9 @@ public class LabWorkInputHelper {
         if (update) {
             labWork.setId(inputId(scanner));
         }
+        else {
+            labWork.setId(LabWork.generateId());
+        }
         labWork.setName(inputName(scanner));
         labWork.setCoordinates(inputCoordinates(scanner));
         labWork.setMinimalPoint(inputMinimalPoint(scanner));
