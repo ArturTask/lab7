@@ -28,11 +28,11 @@ public class SocketContext {
         return (T) val;
     }
 
-    public int getPort() {
+    public static int getPort() {
         return (Integer) ALL_PARAMS.get(SocketContextParam.SERVER_PORT);
     }
 
-    public String getHost() {
+    public static String getHost() {
         return String.valueOf(ALL_PARAMS.get(SocketContextParam.SERVER_HOST));
     }
 

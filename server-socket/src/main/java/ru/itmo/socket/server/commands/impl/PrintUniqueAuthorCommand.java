@@ -1,14 +1,11 @@
 package ru.itmo.socket.server.commands.impl;
 
-import ru.itmo.socket.server.commands.ScriptHelper;
 import ru.itmo.socket.server.commands.ServerCommand;
 import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Set;
-
-import static ru.itmo.socket.server.commands.impl.CommandHistory.MAX_HISTORY_SIZE;
 
 public class PrintUniqueAuthorCommand implements ServerCommand {
     @Override

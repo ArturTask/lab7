@@ -29,7 +29,7 @@ public class Client {
     }
 
     /**
-     * @return true - если любая команда кроме 'exit', false - если 'exit'
+     * @return true - если любая команда кроме 'exit', false - если 'exit' и 'disconnect'
      */
     private static boolean processRemoteCommand(Scanner scanner) throws InterruptedException {
         String host = SocketContext.getHost();

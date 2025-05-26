@@ -1,6 +1,5 @@
 package ru.itmo.socket.server.commands.impl;
 
-import ru.itmo.socket.server.commands.ScriptHelper;
 import ru.itmo.socket.server.commands.ServerCommand;
 
 import java.io.IOException;
