@@ -1,71 +1,74 @@
-package ru.itmo.socket.server;
+package ru.itmo.socket.server.concurrent;
 
+import lombok.RequiredArgsConstructor;
 import ru.itmo.socket.common.dto.CommandDto;
 import ru.itmo.socket.common.exception.AppExitException;
-import ru.itmo.socket.common.util.ConnectionContext;
 import ru.itmo.socket.server.commands.ServerCommand;
 import ru.itmo.socket.server.commands.ServerCommandContext;
 import ru.itmo.socket.server.commands.impl.CommandHistory;
-import ru.itmo.socket.server.concurrent.ProcessClientTask;
-import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
-import ru.itmo.socket.server.manager.XmlCollectionLoader;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Server {
+@RequiredArgsConstructor
+public class ProcessClientTask extends RecursiveTask<Void> {
+    private final Socket clientSocket;
+    private final BlockingQueue<Integer> availableIds;
+    private final AtomicInteger connectionCounter;
 
-    private static final ForkJoinPool forkJoinPool = new ForkJoinPool(ConnectionContext.getMaxConnections());
-    private static final AtomicInteger CONNECTION_COUNTER = new AtomicInteger(0);
-    private static final BlockingQueue<Integer> AVAILABLE_IDS = initAvailableIds();
+    private int clientId;
 
-    public static void main(String[] args) {
-        startServer();
-    }
 
-    private static void startServer() {
-        // загружаем из файла collection.txt изначальные значения
-        LabWorkTreeSetManager manager = LabWorkTreeSetManager.getInstance();
-        new XmlCollectionLoader(manager, "collection.txt").load();
-
-        int port = ConnectionContext.getPort();
-
-        // стартуем сервер
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Макс. количество подключений = " + ConnectionContext.getMaxConnections());
-            System.out.println("Сервер запущен и ожидает подключения...");
-
-            // ждем подключений
-            acceptConnection(serverSocket);
-
+    @Override
+    protected Void compute() {
+        try {
+            clientId = availableIds.remove(); // take first possible id
+            connectionCounter.incrementAndGet(); // connection +1
+            processConnection();
         } catch (Exception e) {
             System.err.println("Ошибка сервера: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            availableIds.add(clientId); // finished processing this client
+            connectionCounter.getAndDecrement();
+            System.out.println("[Tech] [INFO] Клиент отключился, clientId = " + clientId);
         }
+        return null;
     }
 
-    private static void acceptConnection(ServerSocket serverSocket) throws IOException, ClassNotFoundException {
-        while (true) {
-            // accept new connection
-            Socket clientSocket = serverSocket.accept();
-            if (CONNECTION_COUNTER.get() == ConnectionContext.getMaxConnections()) {
-                System.out.println("Максимальное число подключений достигнуто, отказ в подключении: " + clientSocket.getInetAddress());
-                clientSocket.close();
-                continue;
+    private void processConnection() throws IOException, ClassNotFoundException {
+        if (clientSocket == null) {
+            System.err.println("[Tech] [Error] Thread " + Thread.currentThread().getName() + " can't start working without clientSocket");
+            return;
+        }
+        try (ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
+             ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream())) {
+
+            System.out.println("[Tech] [INFO] Клиент подключился, clientId = " + clientId); // " + Thread.currentThread().getName() + "
+
+            while (true) {
+                // в цикле обрабатываем команды с клиентской стороны подключения клиентов
+                if (!sendToClient(ois, oos)) {
+                    break;
+                }
             }
 
-            forkJoinPool.submit(new ProcessClientTask(clientSocket, AVAILABLE_IDS, CONNECTION_COUNTER));
-
+        } catch (SocketException ignore) {
+            // ignore connection attempts of finished jars
+        } catch (EOFException eofException) {
+            System.err.println("Клиент неожиданно прекратил соединение, не удалось прочитать команду");
+        } finally {
+            clientSocket.close();
         }
-    }
 
+    }
 
     /**
      * метод обработки запросов от клиента
@@ -109,15 +112,4 @@ public class Server {
     }
 
 
-    /**
-     * Генерим что-то вроде номерков, по количеству доступных соединений - после отключения
-     * просто переиспользуем номерки пользователей так они не будут плодиться
-     */
-    private static BlockingQueue<Integer> initAvailableIds() {
-        ArrayBlockingQueue<Integer> arrayBlockingQueue = new ArrayBlockingQueue<>(ConnectionContext.getMaxConnections());
-        for (int i = 0; i < ConnectionContext.getMaxConnections(); i++) {
-            arrayBlockingQueue.add(i + 1);
-        }
-        return arrayBlockingQueue;
-    }
 }
