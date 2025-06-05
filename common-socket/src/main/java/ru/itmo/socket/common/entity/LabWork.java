@@ -3,6 +3,7 @@ package ru.itmo.socket.common.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 public class LabWork implements Comparable<LabWork>, Serializable {
     private static long lastGeneratedId = 3;
     private long id;
@@ -36,32 +38,8 @@ public class LabWork implements Comparable<LabWork>, Serializable {
     }
 
     @Override
-    public String toString() {
-
-        String difficultyStr = (difficulty != null) ? difficulty.toString() : "Не указана";
-
-        return "\n" +
-                "id: " + id + "\n" +
-                "name: \"" + name + "\"\n" +
-                "coordinates: " + coordinates + "\n" +
-                "created: " + creationDate + "\n" +
-                "minimalPoint: " + minimalPoint + "\n" +
-                "difficulty: " + difficultyStr + "\n" +
-                "author: " + author;
-    }
-
-
-    @Override
     public int compareTo(LabWork labWork) {
         return Long.compare(this.id, labWork.id);
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public void setName(String name) {
@@ -70,18 +48,10 @@ public class LabWork implements Comparable<LabWork>, Serializable {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public void setCoordinates(Coordinates coordinates) {
         if (coordinates == null)
             throw new IllegalArgumentException("Значение поля coordinates не может быть равно null!");
         this.coordinates = coordinates;
-    }
-
-    public Coordinates getCoordinates() {
-        return coordinates;
     }
 
     public void setMinimalPoint(long minimalPoint) {
@@ -90,26 +60,10 @@ public class LabWork implements Comparable<LabWork>, Serializable {
         this.minimalPoint = minimalPoint;
     }
 
-    public long getMinimalPoint() {
-        return minimalPoint;
-    }
-
-    public void setDifficulty(Difficulty difficulty) {
-        this.difficulty = difficulty;
-    }
-
-    public Difficulty getDifficulty() {
-        return difficulty;
-    }
-
     public void setAuthor(Person author) {
         if (author == null)
             throw new IllegalArgumentException("Значение поля author не может быть равно null!");
         this.author = author;
-    }
-
-    public Person getAuthor() {
-        return author;
     }
 }
 

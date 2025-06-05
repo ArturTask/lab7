@@ -28,16 +28,4 @@ public class Coordinates implements Serializable {
             throw new IllegalArgumentException("Максимальное значение поля x: 879!");
         this.x = x;
     }
-
-    public float getX() {
-        return x;
-    }
-
-    public void setY(float y) {
-        this.y = y;
-    }
-
-    public float getY() {
-        return y;
-    }
 }
