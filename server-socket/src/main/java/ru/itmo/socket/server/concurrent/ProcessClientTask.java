@@ -6,6 +6,7 @@ import ru.itmo.socket.common.exception.AppExitException;
 import ru.itmo.socket.server.commands.ServerCommand;
 import ru.itmo.socket.server.commands.ServerCommandContext;
 import ru.itmo.socket.server.commands.impl.CommandHistory;
+import ru.itmo.socket.server.commands.impl.ExitCommand;
 import ru.itmo.socket.server.commands.impl.LoginCommand;
 import ru.itmo.socket.server.commands.impl.RegisterCommand;
 
@@ -15,19 +16,25 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.sql.Connection;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
-public class ProcessClientTask extends RecursiveTask<Void> {
+public class ProcessClientTask implements Runnable {
+    private static final ExecutorService sender = Executors.newCachedThreadPool();
+
     private final Socket clientSocket;
     private final ConcurrentSkipListSet<Integer> availableIds;
     private final AtomicInteger connectionCounter;
+    private final AtomicBoolean active = new AtomicBoolean(false);
 
 
     @Override
-    protected Void compute() {
+    public void run() {
         try {
             initThread();
             processConnection();
@@ -37,7 +44,6 @@ public class ProcessClientTask extends RecursiveTask<Void> {
         } finally {
             destroyThread();
         }
-        return null;
     }
 
     /**
@@ -57,6 +63,7 @@ public class ProcessClientTask extends RecursiveTask<Void> {
         int clientId = availableIds.first(); // take first possible id
         availableIds.remove(clientId);
         connectionCounter.incrementAndGet(); // connection +1
+        active.set(true);
 
         UserContext.initUserContext(clientId);
         System.out.printf("[Tech] [INFO] Клиент [%s] подключился %n", UserContext.getLogin()); // " + Thread.currentThread().getName() + "
@@ -70,11 +77,9 @@ public class ProcessClientTask extends RecursiveTask<Void> {
         try (ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
              ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream())) {
 
-            while (true) {
+            while (active.get()) {
                 // в цикле обрабатываем команды с клиентской стороны подключения клиентов
-                if (!sendToClient(ois, oos)) {
-                    break;
-                }
+                sendToClient(ois, oos);
             }
 
         } catch (SocketException ignore) {
@@ -89,51 +94,48 @@ public class ProcessClientTask extends RecursiveTask<Void> {
 
     /**
      * метод обработки запросов от клиента
-     *
-     * @return true - если любая команда кроме 'exit', false - если 'exit'
+     * <p>
+     * active true - если любая команда кроме 'exit', false - если 'exit' (ставит в поле класса)
      */
-    private static boolean sendToClient(ObjectInputStream ois, ObjectOutputStream oos) throws IOException, ClassNotFoundException {
-        boolean continueWorking = true;
+    private void sendToClient(ObjectInputStream ois, ObjectOutputStream oos) throws IOException, ClassNotFoundException {
 
         // Чтение запроса от клиента (в объект)
         CommandDto commandDto = (CommandDto) ois.readObject();
-        System.out.printf("Получено от клиента [%s]: %s%n", UserContext.getLogin() , commandDto);
+        System.out.printf("Получено от клиента [%s]: %s%n", UserContext.getLogin(), commandDto);
 
         String commandName = commandDto.getCommandName();
         ServerCommand serverCommand = ServerCommandContext.getCommand(commandName);
 
-        if (serverCommand != null) {
-            // кидаем клиенту количество строк вывода (которое ему надо будет считать) из-за СКРИПТА (команда execute_script),
-            // потому что в скрипте может быть много команд :(
-            // у других команд по умолчанию - 1 строка вывода, можно если че переопределить для любой команды
-            int numberOfOutputLines = serverCommand.getNumberOfOutputLines(commandDto.getArg());
-            oos.writeUTF(String.valueOf(numberOfOutputLines));
+//        // ВСЕГДА кидаем клиенту количество строк вывода (которое ему надо будет считать) из-за СКРИПТА (команда execute_script), потому что в скрипте может быть много команд :( у других команд по умолчанию - 1 строка вывода, можно если че переопределить для любой команды
+        int numberOfOutputLines = serverCommand.getNumberOfOutputLines(commandDto.getArg());
+        oos.writeUTF(String.valueOf(numberOfOutputLines));
 
-            // проверка на авторизацию
-            if(!(serverCommand instanceof LoginCommand || serverCommand instanceof RegisterCommand) && !UserContext.getAuthorized()){
-                System.err.printf("[Tech] [ERROR] Неавторизованный пользователь %s не может выполнять ничего кроме login/register%n", UserContext.getLogin());
-                oos.writeUTF("Неавторизованный пользователь не может выполнять ничего кроме login/register");
-                oos.flush();
-                return true; // skip this loop
-            }
 
+        // проверка на авторизацию
+        if (!(serverCommand instanceof LoginCommand || serverCommand instanceof RegisterCommand || serverCommand instanceof ExitCommand)
+                && !UserContext.getAuthorized()) {
+            System.err.printf("[Tech] [ERROR] Неавторизованный пользователь %s не может выполнять ничего кроме login/register%n", UserContext.getLogin());
+            oos.writeUTF("Неавторизованный пользователь не может выполнять ничего кроме login/register");
+            oos.flush();
+            return; // skip this loop
+        } else if (serverCommand instanceof LoginCommand || serverCommand instanceof RegisterCommand || serverCommand instanceof ExitCommand) {
+            // execute immediately
             try {
-                // выполняем команду!
                 serverCommand.execute(oos, commandDto.getArg());
-            } catch (AppExitException exitException) {
-                // AppExitException бросается если команда ExitCommand
-                // (через Exception, потому что в скрипте может быть exit => надо обработать сразу же)
-                continueWorking = false;
-            }
-            CommandHistory.addCommand(commandName);
-        } else {
-            System.out.println("Команда не найдена! Введите 'help' для получения списка команд.");
+            } catch (AppExitException ignore){}
+            oos.flush();
+            System.out.printf("Отправлено клиенту [%s] вывод команды: %s%n", UserContext.getLogin(), commandName);
+            return;
         }
-        oos.flush();
-        System.out.printf("Отправлено клиенту [%s] вывод команды: %s%n",UserContext.getLogin() , commandName);
 
+        Integer clientId = UserContext.getClientId();
+        Boolean authorized = UserContext.getAuthorized();
+        String login = UserContext.getLogin();
+        Integer userId = UserContext.getDbUserId();
+        Connection currentConnection = DbUserContext.getConnection();
 
-        return continueWorking;
+        // отправка ответа асинхронно
+        sender.submit(new SendClientTask(clientId, login, authorized, userId, currentConnection, serverCommand, oos, commandDto, active, commandName));
     }
 
 

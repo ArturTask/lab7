@@ -29,6 +29,27 @@ public class UserContext {
         }
     }
 
+    public static void inheritContext(int clientId, String login, boolean authorized, int userId) {
+        try {
+            // connect user to db
+            DbUserContext.connectToDb();
+            CLIENT_ID.set(clientId);
+            LOGIN.set(login);
+            AUTHORIZED.set(authorized);
+            DB_USER_ID.set(userId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void destroyUserContextWithoutDisconnect() {
+        CLIENT_ID.remove();
+        LOGIN.remove();
+        AUTHORIZED.remove();
+        DB_USER_ID.remove();
+
+    }
+
     public static void destroyUserContext() {
         try {
             DbUserContext.disconnect();
