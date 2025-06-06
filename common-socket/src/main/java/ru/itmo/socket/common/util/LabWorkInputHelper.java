@@ -1,11 +1,52 @@
 package ru.itmo.socket.common.util;
 
+import ru.itmo.socket.common.dto.UserDto;
 import ru.itmo.socket.common.entity.*;
 
 import java.time.ZonedDateTime;
 import java.util.Scanner;
 
 public class LabWorkInputHelper {
+
+    public static UserDto readUser(Scanner scanner) {
+        UserDto userDto = new UserDto();
+        userDto.setLogin(inputLogin(scanner));
+        userDto.setPassword(inputPassword(scanner));
+        return userDto;
+
+    }
+
+    private static String inputLogin(Scanner scanner) {
+        while (true) {
+            try {
+                System.out.println("Введите login");
+                String input = scanner.nextLine().trim();
+
+                if (input.isEmpty()) {
+                    throw new IllegalArgumentException("Введено пустое значение");
+                }
+                return input;
+            } catch (Exception e) {
+                System.out.println("Ошибка: " + e.getMessage() + ". Попробуйте еще раз.");
+            }
+        }
+    }
+
+    private static String inputPassword(Scanner scanner) {
+        while (true) {
+            try {
+                System.out.println("Введите password");
+                String input = scanner.nextLine().trim();
+
+                if (input.isEmpty()) {
+                    throw new IllegalArgumentException("Введено пустое значение");
+                }
+                return input;
+            } catch (Exception e) {
+                System.out.println("Ошибка: " + e.getMessage() + ". Попробуйте еще раз.");
+            }
+        }
+    }
 
     public static LabWork readLabWork(Scanner scanner) {
         return readLabWork(scanner, false);
@@ -14,13 +55,16 @@ public class LabWorkInputHelper {
     // Основной публичный метод, который собирает все части объекта LabWork.
     public static LabWork readLabWork(Scanner scanner, boolean update) {
 
+        if (inputIsGenerateDefault(scanner)) {
+            return LabWork.generateDefault();
+        }
+
         LabWork labWork = new LabWork();
 
         if (update) {
             labWork.setId(inputId(scanner));
-        }
-        else {
-            labWork.setId(LabWork.generateId());
+        } else {
+            labWork.setId(-1);
         }
         labWork.setName(inputName(scanner));
         labWork.setCoordinates(inputCoordinates(scanner));
@@ -29,6 +73,13 @@ public class LabWorkInputHelper {
         labWork.setAuthor(inputAuthor(scanner));
 
         return labWork;
+    }
+
+    private static boolean inputIsGenerateDefault(Scanner scanner) {
+        System.out.println("Хотите сгенерировать LabWork? (y/n)");
+        String input = scanner.nextLine().trim();
+
+        return !input.equalsIgnoreCase("n");
     }
 
     private static long inputId(Scanner scanner) {
@@ -169,7 +220,6 @@ public class LabWorkInputHelper {
     }
 
 
-
     // Чтение информации об авторе.
     public static Person inputAuthor(Scanner scanner) {
         Person author = new Person("temporaryName", ZonedDateTime.now(), 1f, 1f, Color.BROWN);
@@ -187,7 +237,7 @@ public class LabWorkInputHelper {
             try {
                 System.out.println("Введите имя автора:");
                 String name = scanner.nextLine().trim();
-                if (name.isEmpty()|| name.equals("null")) {
+                if (name.isEmpty() || name.equals("null")) {
                     throw new IllegalArgumentException("Имя автора не может быть пустым или равен null");
                 }
                 return name;

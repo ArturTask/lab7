@@ -28,6 +28,7 @@ public class XmlCollectionLoader {
     /**
      * Загружает все элементы <LabWork> из указанного XML и добавляет их в менеджер.
      */
+    @Deprecated // теперь добавление только в контексте пользователя
     public void load() {
         try {
 
