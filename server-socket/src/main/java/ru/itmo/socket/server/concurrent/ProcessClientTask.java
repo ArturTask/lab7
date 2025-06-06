@@ -21,14 +21,14 @@ import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
-public class ProcessClientTask extends RecursiveTask<Void> {
+public class ProcessClientTask implements Runnable {
     private final Socket clientSocket;
     private final ConcurrentSkipListSet<Integer> availableIds;
     private final AtomicInteger connectionCounter;
 
 
     @Override
-    protected Void compute() {
+    public void run() {
         try {
             initThread();
             processConnection();
@@ -38,7 +38,6 @@ public class ProcessClientTask extends RecursiveTask<Void> {
         } finally {
             destroyThread();
         }
-        return null;
     }
 
     /**
