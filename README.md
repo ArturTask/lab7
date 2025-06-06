@@ -1,4 +1,5 @@
-# lab6-socket-full
+# lab7
+описание запуска 7 лабы в файле [RUN.md](RUN.md)
 
 ## Description
 6 лаба Итмо по сокетам
