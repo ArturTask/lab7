@@ -22,6 +22,7 @@ public class LabWorkTreeSetManager {
     private final UsersDao usersDao = new UsersDao();
 
     private static LabWorkTreeSetManager instance;
+    // dbUserId -> Set<LabWork>
     private Map<Integer, SortedSet<LabWork>> labWorksMap;
     private LocalDateTime initializationTime;
 
@@ -56,18 +57,22 @@ public class LabWorkTreeSetManager {
 
     // Метод для получения строкового представления всех элементов коллекции
     public synchronized String getAllElementsAsString() {
-        SortedSet<LabWork> labWorks = getCollectionOfCurrentUser();
-        if (labWorks.isEmpty()) {
+        if (labWorksMap.isEmpty()) {
             return "Коллекция пуста.";
         }
         StringBuilder sb = new StringBuilder();
-        Iterator<LabWork> iterator = labWorks.iterator();
-        while (iterator.hasNext()) {
-            sb.append(iterator.next().toString());
-            if (iterator.hasNext()) {
-                sb.append(System.lineSeparator());
-            }
-        }
+        sb.append("[\n");
+        labWorksMap.forEach((userId, labWorks) -> {
+                    UserDto user = usersDao.findById(userId);
+                    sb.append(("USER %s: %n" +
+                            "%s%n" +
+                            "----------------%n %n")
+                            .formatted(user.getLogin(), labWorks));
+                }
+                );
+
+
+        sb.append("\n]");
         return sb.toString();
     }
 
@@ -79,6 +84,7 @@ public class LabWorkTreeSetManager {
 
     // Обновление элемента с указанным id: безопасное удаление старого элемента и добавление нового (с сохранённым id)
     public synchronized boolean updateById(long id, LabWork newElement) {
+        // причем обновляем мы ТОЛЬКО свои элементы
         SortedSet<LabWork> labWorks = getCollectionOfCurrentUser();
 
         Iterator<LabWork> iterator = labWorks.iterator();

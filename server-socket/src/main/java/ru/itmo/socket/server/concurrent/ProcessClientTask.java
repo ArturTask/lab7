@@ -6,6 +6,7 @@ import ru.itmo.socket.common.exception.AppExitException;
 import ru.itmo.socket.server.commands.ServerCommand;
 import ru.itmo.socket.server.commands.ServerCommandContext;
 import ru.itmo.socket.server.commands.impl.CommandHistory;
+import ru.itmo.socket.server.commands.impl.ExitCommand;
 import ru.itmo.socket.server.commands.impl.LoginCommand;
 import ru.itmo.socket.server.commands.impl.RegisterCommand;
 
@@ -110,7 +111,8 @@ public class ProcessClientTask extends RecursiveTask<Void> {
             oos.writeUTF(String.valueOf(numberOfOutputLines));
 
             // проверка на авторизацию
-            if(!(serverCommand instanceof LoginCommand || serverCommand instanceof RegisterCommand) && !UserContext.getAuthorized()){
+            if(!(serverCommand instanceof LoginCommand || serverCommand instanceof RegisterCommand || serverCommand instanceof ExitCommand)
+                    && !UserContext.getAuthorized()){
                 System.err.printf("[Tech] [ERROR] Неавторизованный пользователь %s не может выполнять ничего кроме login/register%n", UserContext.getLogin());
                 oos.writeUTF("Неавторизованный пользователь не может выполнять ничего кроме login/register");
                 oos.flush();
