@@ -23,12 +23,6 @@ public class ProcessClientTask extends RecursiveTask<Void> {
     private final ConcurrentSkipListSet<Integer> availableIds;
     private final AtomicInteger connectionCounter;
 
-    // todo artur вынести в ThreadLocal чтобы удобно брать во всех командах
-    private boolean authorized = false;
-    private String login = "";
-
-    private int clientId;
-
 
     @Override
     protected Void compute() {
@@ -48,23 +42,22 @@ public class ProcessClientTask extends RecursiveTask<Void> {
      * Чистим контекст пользователя
      */
     private void destroyThread() {
-        availableIds.add(clientId); // finished processing this client
+        availableIds.add(UserContext.getClientId()); // finished processing this client
         connectionCounter.getAndDecrement();
-        authorized = false;
-        login = "";
-        System.out.println("[Tech] [INFO] Клиент отключился, clientId = " + clientId);
+        System.out.printf("[Tech] [INFO] Клиент [%s] отключился %n", UserContext.getLogin());
+        UserContext.destroyUserContext();
     }
 
     /**
      * Инициализируем контекст пользователя
      */
     private void initThread() {
-        clientId = availableIds.first(); // take first possible id
+        int clientId = availableIds.first(); // take first possible id
         availableIds.remove(clientId);
-
         connectionCounter.incrementAndGet(); // connection +1
-        authorized = false;
-        login = "unauthorized_" + clientId;
+
+        UserContext.initUserContext(clientId);
+        System.out.printf("[Tech] [INFO] Клиент [%s] подключился %n", UserContext.getLogin()); // " + Thread.currentThread().getName() + "
     }
 
     private void processConnection() throws IOException, ClassNotFoundException {
@@ -74,8 +67,6 @@ public class ProcessClientTask extends RecursiveTask<Void> {
         }
         try (ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
              ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream())) {
-
-            System.out.println("[Tech] [INFO] Клиент подключился, clientId = " + clientId); // " + Thread.currentThread().getName() + "
 
             while (true) {
                 // в цикле обрабатываем команды с клиентской стороны подключения клиентов
@@ -104,7 +95,7 @@ public class ProcessClientTask extends RecursiveTask<Void> {
 
         // Чтение запроса от клиента (в объект)
         CommandDto commandDto = (CommandDto) ois.readObject();
-        System.out.println("Получено от клиента: " + commandDto);
+        System.out.printf("Получено от клиента [%s]: %s%n", UserContext.getLogin() , commandDto);
 
         String commandName = commandDto.getCommandName();
         ServerCommand serverCommand = ServerCommandContext.getCommand(commandName);
@@ -129,7 +120,7 @@ public class ProcessClientTask extends RecursiveTask<Void> {
             System.out.println("Команда не найдена! Введите 'help' для получения списка команд.");
         }
         oos.flush();
-        System.out.println("Отправлено клиенту вывод команды: " + commandName);
+        System.out.printf("Отправлено клиенту [%s] вывод команды: %s%n",UserContext.getLogin() , commandName);
 
 
         return continueWorking;

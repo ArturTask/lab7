@@ -1,11 +1,52 @@
 package ru.itmo.socket.common.util;
 
+import ru.itmo.socket.common.dto.UserDto;
 import ru.itmo.socket.common.entity.*;
 
 import java.time.ZonedDateTime;
 import java.util.Scanner;
 
 public class LabWorkInputHelper {
+
+    public static UserDto readUser(Scanner scanner) {
+        UserDto userDto = new UserDto();
+        userDto.setLogin(inputLogin(scanner));
+        userDto.setPassword(inputPassword(scanner));
+        return userDto;
+
+    }
+
+    private static String inputLogin(Scanner scanner) {
+        while (true) {
+            try {
+                System.out.println("Введите login");
+                String input = scanner.nextLine().trim();
+
+                if (input.isEmpty()) {
+                    throw new IllegalArgumentException("Введено пустое значение");
+                }
+                return input;
+            } catch (Exception e) {
+                System.out.println("Ошибка: " + e.getMessage() + ". Попробуйте еще раз.");
+            }
+        }
+    }
+
+    private static String inputPassword(Scanner scanner) {
+        while (true) {
+            try {
+                System.out.println("Введите password");
+                String input = scanner.nextLine().trim();
+
+                if (input.isEmpty()) {
+                    throw new IllegalArgumentException("Введено пустое значение");
+                }
+                return input;
+            } catch (Exception e) {
+                System.out.println("Ошибка: " + e.getMessage() + ". Попробуйте еще раз.");
+            }
+        }
+    }
 
     public static LabWork readLabWork(Scanner scanner) {
         return readLabWork(scanner, false);

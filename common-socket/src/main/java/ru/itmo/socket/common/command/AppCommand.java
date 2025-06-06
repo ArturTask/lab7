@@ -27,6 +27,8 @@ public enum AppCommand {
     FILTER_LESS_THAN_MINIMAL_POINT("filter_less_than_minimal_point"),
     PRINT_DESCENDING("print_descending"),
     PRINT_UNIQUE_AUTHOR("print_unique_author"),
+    REGISTER("register"),
+    LOGIN("login")
     ;
 
     private final String value;

@@ -2,12 +2,16 @@ package ru.itmo.socket.server;
 
 import ru.itmo.socket.common.util.ConnectionContext;
 import ru.itmo.socket.server.concurrent.ProcessClientTask;
+import ru.itmo.socket.server.db.DatabaseConfig;
+import ru.itmo.socket.server.db.DatabaseInitializer;
 import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
 import ru.itmo.socket.server.manager.XmlCollectionLoader;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,7 +25,17 @@ public class Server {
     private static final ConcurrentSkipListSet<Integer> AVAILABLE_IDS = initAvailableIds();
 
     public static void main(String[] args) {
+        initDb();
         startServer();
+    }
+
+    private static void initDb() {
+        try(Connection connection = DatabaseConfig.getConnection()) {
+            DatabaseInitializer.init(connection);
+        } catch (SQLException e) {
+            System.out.println("[Tech] [ERROR] блин че то с базой");
+            throw new RuntimeException(e);
+        }
     }
 
     private static void startServer() {

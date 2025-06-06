@@ -1,5 +1,6 @@
-package ru.itmo.socket.server.db;
+package ru.itmo.socket.server.concurrent;
 
+import ru.itmo.socket.server.db.DatabaseConfig;
 import ru.itmo.socket.server.db.exception.ThreadLocalConnectionNullException;
 
 import java.sql.Connection;
@@ -8,21 +9,20 @@ import java.sql.SQLException;
 /**
  * Задел на будущее - для многопоточки, у каждого пользака будет свой connection
  */
-public class ConnectionManager {
+public class DbContext {
 
-    private static final ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<>();
+    private static final ThreadLocal<Connection> THREAD_LOCAL_DB_CONNECTION = new ThreadLocal<>();
 
     /**
      * эту функцию надо вызывать в всегда при новом потоке (подключении) чтобы проинициалищировать соединение с БД
      */
-    public static Connection connectToDatabase() throws SQLException {
+    public static void connectToDb() throws SQLException {
         Connection connection = DatabaseConfig.getConnection();
-        threadLocalConnection.set(connection);
-        return connection;
+        THREAD_LOCAL_DB_CONNECTION.set(connection);
     }
 
     public static Connection getConnection() {
-        Connection conn = threadLocalConnection.get();
+        Connection conn = THREAD_LOCAL_DB_CONNECTION.get();
         if (conn == null) {
             System.err.println("[ERROR] Поток " + Thread.currentThread().getName() + " не имеет подключения к БД!");
             throw new ThreadLocalConnectionNullException("No connection for thread " + Thread.currentThread().getName());
@@ -31,10 +31,10 @@ public class ConnectionManager {
     }
 
     public static void disconnect() throws SQLException {
-        Connection conn = threadLocalConnection.get();
+        Connection conn = THREAD_LOCAL_DB_CONNECTION.get();
         if (conn != null) {
             conn.close();
-            threadLocalConnection.remove();
+            THREAD_LOCAL_DB_CONNECTION.remove();
         }
     }
 }
