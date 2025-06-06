@@ -1,22 +1,14 @@
 package ru.itmo.socket.server;
 
-import ru.itmo.socket.common.dto.CommandDto;
-import ru.itmo.socket.common.exception.AppExitException;
 import ru.itmo.socket.common.util.ConnectionContext;
-import ru.itmo.socket.server.commands.ServerCommand;
-import ru.itmo.socket.server.commands.ServerCommandContext;
-import ru.itmo.socket.server.commands.impl.CommandHistory;
 import ru.itmo.socket.server.concurrent.ProcessClientTask;
 import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
 import ru.itmo.socket.server.manager.XmlCollectionLoader;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,7 +16,9 @@ public class Server {
 
     private static final ForkJoinPool forkJoinPool = new ForkJoinPool(ConnectionContext.getMaxConnections());
     private static final AtomicInteger CONNECTION_COUNTER = new AtomicInteger(0);
-    private static final BlockingQueue<Integer> AVAILABLE_IDS = initAvailableIds();
+
+    // concurrent TreeSet<> (берем первый доступный незанятый номер и присваиваем клиенту)
+    private static final ConcurrentSkipListSet<Integer> AVAILABLE_IDS = initAvailableIds();
 
     public static void main(String[] args) {
         startServer();
@@ -66,55 +60,12 @@ public class Server {
         }
     }
 
-
-    /**
-     * метод обработки запросов от клиента
-     *
-     * @return true - если любая команда кроме 'exit', false - если 'exit'
-     */
-    private static boolean sendToClient(ObjectInputStream ois, ObjectOutputStream oos) throws IOException, ClassNotFoundException {
-        boolean continueWorking = true;
-
-        // Чтение запроса от клиента (в объект)
-        CommandDto commandDto = (CommandDto) ois.readObject();
-        System.out.println("Получено от клиента: " + commandDto);
-
-        String commandName = commandDto.getCommandName();
-        ServerCommand serverCommand = ServerCommandContext.getCommand(commandName);
-
-        if (serverCommand != null) {
-            // кидаем клиенту количество строк вывода (которое ему надо будет считать) из-за СКРИПТА (команда execute_script),
-            // потому что в скрипте может быть много команд :(
-            // у других команд по умолчанию - 1 строка вывода, можно если че переопределить для любой команды
-            int numberOfOutputLines = serverCommand.getNumberOfOutputLines(commandDto.getArg());
-            oos.writeUTF(String.valueOf(numberOfOutputLines));
-
-            try {
-                // выполняем команду!
-                serverCommand.execute(oos, commandDto.getArg());
-            } catch (AppExitException exitException) {
-                // AppExitException бросается если команда ExitCommand
-                // (через Exception, потому что в скрипте может быть exit => надо обработать сразу же)
-                continueWorking = false;
-            }
-            CommandHistory.addCommand(commandName);
-        } else {
-            System.out.println("Команда не найдена! Введите 'help' для получения списка команд.");
-        }
-        oos.flush();
-        System.out.println("Отправлено клиенту вывод команды: " + commandName);
-
-
-        return continueWorking;
-    }
-
-
     /**
      * Генерим что-то вроде номерков, по количеству доступных соединений - после отключения
      * просто переиспользуем номерки пользователей так они не будут плодиться
      */
-    private static BlockingQueue<Integer> initAvailableIds() {
-        ArrayBlockingQueue<Integer> arrayBlockingQueue = new ArrayBlockingQueue<>(ConnectionContext.getMaxConnections());
+    private static ConcurrentSkipListSet<Integer> initAvailableIds() {
+        ConcurrentSkipListSet<Integer> arrayBlockingQueue = new ConcurrentSkipListSet<>();
         for (int i = 0; i < ConnectionContext.getMaxConnections(); i++) {
             arrayBlockingQueue.add(i + 1);
         }

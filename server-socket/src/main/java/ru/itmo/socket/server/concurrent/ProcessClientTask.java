@@ -13,15 +13,19 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
 public class ProcessClientTask extends RecursiveTask<Void> {
     private final Socket clientSocket;
-    private final BlockingQueue<Integer> availableIds;
+    private final ConcurrentSkipListSet<Integer> availableIds;
     private final AtomicInteger connectionCounter;
+
+    // todo artur вынести в ThreadLocal чтобы удобно брать во всех командах
+    private boolean authorized = false;
+    private String login = "";
 
     private int clientId;
 
@@ -29,18 +33,38 @@ public class ProcessClientTask extends RecursiveTask<Void> {
     @Override
     protected Void compute() {
         try {
-            clientId = availableIds.remove(); // take first possible id
-            connectionCounter.incrementAndGet(); // connection +1
+            initThread();
             processConnection();
         } catch (Exception e) {
             System.err.println("Ошибка сервера: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            availableIds.add(clientId); // finished processing this client
-            connectionCounter.getAndDecrement();
-            System.out.println("[Tech] [INFO] Клиент отключился, clientId = " + clientId);
+            destroyThread();
         }
         return null;
+    }
+
+    /**
+     * Чистим контекст пользователя
+     */
+    private void destroyThread() {
+        availableIds.add(clientId); // finished processing this client
+        connectionCounter.getAndDecrement();
+        authorized = false;
+        login = "";
+        System.out.println("[Tech] [INFO] Клиент отключился, clientId = " + clientId);
+    }
+
+    /**
+     * Инициализируем контекст пользователя
+     */
+    private void initThread() {
+        clientId = availableIds.first(); // take first possible id
+        availableIds.remove(clientId);
+
+        connectionCounter.incrementAndGet(); // connection +1
+        authorized = false;
+        login = "unauthorized_" + clientId;
     }
 
     private void processConnection() throws IOException, ClassNotFoundException {

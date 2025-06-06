@@ -14,12 +14,15 @@ public class LabWorkInputHelper {
     // Основной публичный метод, который собирает все части объекта LabWork.
     public static LabWork readLabWork(Scanner scanner, boolean update) {
 
+        if (inputIsGenerateDefault(scanner)) {
+            return LabWork.generateDefault();
+        }
+
         LabWork labWork = new LabWork();
 
         if (update) {
             labWork.setId(inputId(scanner));
-        }
-        else {
+        } else {
             labWork.setId(LabWork.generateId());
         }
         labWork.setName(inputName(scanner));
@@ -29,6 +32,13 @@ public class LabWorkInputHelper {
         labWork.setAuthor(inputAuthor(scanner));
 
         return labWork;
+    }
+
+    private static boolean inputIsGenerateDefault(Scanner scanner) {
+        System.out.println("Хотите сгенерировать LabWork? (y/n)");
+        String input = scanner.nextLine().trim();
+
+        return !input.equalsIgnoreCase("n");
     }
 
     private static long inputId(Scanner scanner) {
@@ -169,7 +179,6 @@ public class LabWorkInputHelper {
     }
 
 
-
     // Чтение информации об авторе.
     public static Person inputAuthor(Scanner scanner) {
         Person author = new Person("temporaryName", ZonedDateTime.now(), 1f, 1f, Color.BROWN);
@@ -187,7 +196,7 @@ public class LabWorkInputHelper {
             try {
                 System.out.println("Введите имя автора:");
                 String name = scanner.nextLine().trim();
-                if (name.isEmpty()|| name.equals("null")) {
+                if (name.isEmpty() || name.equals("null")) {
                     throw new IllegalArgumentException("Имя автора не может быть пустым или равен null");
                 }
                 return name;

@@ -29,7 +29,6 @@ public class ServerCommandContext {
         map.put(FILTER_LESS_THAN_MINIMAL_POINT, new FilterLessThanMinimalPointCommand());
         map.put(PRINT_DESCENDING, new PrintDescendingCommand());
         map.put(PRINT_UNIQUE_AUTHOR, new PrintUniqueAuthorCommand());
-        map.put(DISCONNECT_CLIENT, new DisconnectClientCommand());
         return map;
     }
 

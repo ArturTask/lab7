@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 public class LabWorkTreeSetManager {
     private static LabWorkTreeSetManager instance;
+    // todo artur сделать Map<String SortedSet>
+    //  login -> data
     private TreeSet<LabWork> labWorks;
     private LocalDateTime initializationTime;
 
@@ -27,13 +29,13 @@ public class LabWorkTreeSetManager {
         return instance;
     }
 
-    public TreeSet<LabWork> getAllElements() {
+    public synchronized TreeSet<LabWork> getAllElements() {
         return labWorks;
     }
 
 
     // Метод для получения информации о коллекции
-    public String getCollectionInfo() {
+    public synchronized String getCollectionInfo() {
         return "Тип коллекции: " + labWorks.getClass().getName() + "\n" +
                 "Дата инициализации: " + initializationTime + "\n" +
                 "Количество элементов: " + labWorks.size();
@@ -41,7 +43,7 @@ public class LabWorkTreeSetManager {
 
 
     // Метод для получения строкового представления всех элементов коллекции
-    public String getAllElementsAsString() {
+    public synchronized String getAllElementsAsString() {
         if (labWorks.isEmpty()) {
             return "Коллекция пуста.";
         }
@@ -57,12 +59,12 @@ public class LabWorkTreeSetManager {
     }
 
     // Добавление нового элемента в коллекцию
-    public boolean add(LabWork element) {
+    public synchronized boolean add(LabWork element) {
         return labWorks.add(element);
     }
 
     // Обновление элемента с указанным id: безопасное удаление старого элемента и добавление нового (с сохранённым id)
-    public boolean updateById(long id, LabWork newElement) {
+    public synchronized boolean updateById(long id, LabWork newElement) {
         Iterator<LabWork> iterator = labWorks.iterator();
         while (iterator.hasNext()) {
             LabWork lw = iterator.next();
@@ -76,22 +78,19 @@ public class LabWorkTreeSetManager {
         return false;
     }
 
-    public boolean containsId(long id) {
-        return labWorks.stream().anyMatch(lw -> lw.getId() == id);
-    }
 
     // Удаление элемента по id
-    public boolean removeById(long id) {
+    public synchronized boolean removeById(long id) {
         return labWorks.removeIf(lw -> lw.getId() == id);
     }
 
     // Очистка всей коллекции
-    public void clear() {
+    public synchronized void clear() {
         labWorks.clear();
     }
 
     // Добавление элемента, если он больше наибольшего элемента текущей коллекции
-    public boolean addIfMax(LabWork element) {
+    public synchronized boolean addIfMax(LabWork element) {
         if (labWorks.isEmpty()) {
             labWorks.add(element);
             return true;
@@ -105,21 +104,21 @@ public class LabWorkTreeSetManager {
     }
 
     // Удаление всех элементов, меньших заданного (возвращает количество удалённых элементов)
-    public int removeLower(LabWork element) {
+    public synchronized int removeLower(LabWork element) {
         int initialSize = labWorks.size();
         labWorks.removeIf(lw -> lw.compareTo(element) < 0);
         return initialSize - labWorks.size();
     }
 
     // Фильтрация элементов, у которых значение поля minimalPoint меньше заданного
-    public List<LabWork> filterLessThanMinimalPoint(double minimalPoint) {
+    public synchronized List<LabWork> filterLessThanMinimalPoint(double minimalPoint) {
         return labWorks.stream()
                 .filter(lw -> lw.getMinimalPoint() < minimalPoint)
                 .collect(Collectors.toList());
     }
 
     // Метод для получения элементов в порядке убывания
-    public String getElementsDescending() {
+    public synchronized String getElementsDescending() {
         if (labWorks.isEmpty()) {
             return "Коллекция пуста.";
         }
@@ -136,7 +135,7 @@ public class LabWorkTreeSetManager {
 
 
     // Получение уникальных значений поля author у всех элементов коллекции
-    public Set<String> getUniqueAuthors() {
+    public synchronized Set<String> getUniqueAuthors() {
         return labWorks.stream()
                 .map(LabWork::getAuthor)
                 .filter(Objects::nonNull)

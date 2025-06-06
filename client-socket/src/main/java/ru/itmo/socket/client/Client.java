@@ -2,7 +2,6 @@ package ru.itmo.socket.client;
 
 import ru.itmo.socket.client.command.ClientCommand;
 import ru.itmo.socket.client.command.ClientCommandContext;
-import ru.itmo.socket.client.command.impl.DisconnectClientCommand;
 import ru.itmo.socket.client.command.impl.ExitCommand;
 import ru.itmo.socket.common.dto.CommandDto;
 import ru.itmo.socket.common.exception.AppCommandNotFoundException;
@@ -73,9 +72,8 @@ public class Client {
             // например при добавлении пользователя
             Optional<Object> clientCommandParam = clientCommand.preProcess(scanner);
 
-            // это если мы отключаемся от сервера - disconnect
-            // или выключаем и сервер и клиент!
-            if (clientCommand instanceof DisconnectClientCommand || clientCommand instanceof ExitCommand) {
+            // это если мы отключаемся от сервера - exit
+            if (clientCommand instanceof ExitCommand) {
                 continueWork = false;
             }
 
