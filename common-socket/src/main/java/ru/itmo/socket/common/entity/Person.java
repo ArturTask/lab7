@@ -46,10 +46,6 @@ public class Person implements Serializable {
         return name;
     }
 
-    public void setBirthday(ZonedDateTime birthday) {
-        this.birthday = birthday;
-    }
-
     public ZonedDateTime getBirthday() {
         return birthday;
     }

@@ -3,6 +3,7 @@ package ru.itmo.socket.common.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 public class LabWork implements Comparable<LabWork>, Serializable {
     private static long lastGeneratedId = 3;
     private long id;
@@ -35,22 +37,6 @@ public class LabWork implements Comparable<LabWork>, Serializable {
     public static long generateId() {
         return ++lastGeneratedId;
     }
-
-    @Override
-    public String toString() {
-
-        String difficultyStr = (difficulty != null) ? difficulty.toString() : "Не указана";
-
-        return "\n" +
-                "id: " + id + "\n" +
-                "name: \"" + name + "\"\n" +
-                "coordinates: " + coordinates + "\n" +
-                "created: " + creationDate + "\n" +
-                "minimalPoint: " + minimalPoint + "\n" +
-                "difficulty: " + difficultyStr + "\n" +
-                "author: " + author;
-    }
-
 
     @Override
     public int compareTo(LabWork labWork) {
