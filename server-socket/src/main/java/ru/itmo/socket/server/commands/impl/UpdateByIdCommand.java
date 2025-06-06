@@ -16,7 +16,7 @@ public class UpdateByIdCommand implements ServerCommand {
         if (LabWorkTreeSetManager.getInstance().updateById(id, updatedLabWork)) {
             oos.writeUTF("Элемент успешно обновлён.");
         } else {
-            oos.writeUTF("Ошибка обновления элемента с id = " + id + ", элемент не найден.");
+            oos.writeUTF("Ошибка обновления элемента с id = " + id);
         }
     }
 

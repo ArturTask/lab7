@@ -5,7 +5,6 @@ import ru.itmo.socket.common.dto.CommandDto;
 import ru.itmo.socket.common.exception.AppExitException;
 import ru.itmo.socket.server.commands.ServerCommand;
 import ru.itmo.socket.server.commands.ServerCommandContext;
-import ru.itmo.socket.server.commands.impl.CommandHistory;
 import ru.itmo.socket.server.commands.impl.ExitCommand;
 import ru.itmo.socket.server.commands.impl.LoginCommand;
 import ru.itmo.socket.server.commands.impl.RegisterCommand;

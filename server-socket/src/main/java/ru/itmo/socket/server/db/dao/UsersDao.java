@@ -41,6 +41,18 @@ public class UsersDao {
         }
     }
 
+    public UserDto findById(int id) {
+        String sql = "SELECT id, login FROM users WHERE id = ?";
+        try (PreparedStatement st = DbUserContext.getConnection().prepareStatement(sql)) {
+            st.setInt(1, id);
+            ResultSet rs = st.executeQuery();
+            if (!rs.next()) throw new SqlRequestException("User с id %d не найден".formatted(id));
+            return new UserDto(rs.getInt("id"), rs.getString("login"), "");
+        } catch (SQLException e) {
+            throw new SqlRequestException(e);
+        }
+    }
+
     public List<UserDto> findAll(Connection connection) {
         String sql = "SELECT id, login, password_hash FROM users";
         try (PreparedStatement st = connection.prepareStatement(sql)) {
