@@ -9,7 +9,7 @@ import java.sql.SQLException;
 /**
  * Задел на будущее - для многопоточки, у каждого пользака будет свой connection
  */
-public class DbContext {
+public class DbUserContext {
 
     private static final ThreadLocal<Connection> THREAD_LOCAL_DB_CONNECTION = new ThreadLocal<>();
 

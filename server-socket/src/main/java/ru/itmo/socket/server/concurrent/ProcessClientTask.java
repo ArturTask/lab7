@@ -6,6 +6,8 @@ import ru.itmo.socket.common.exception.AppExitException;
 import ru.itmo.socket.server.commands.ServerCommand;
 import ru.itmo.socket.server.commands.ServerCommandContext;
 import ru.itmo.socket.server.commands.impl.CommandHistory;
+import ru.itmo.socket.server.commands.impl.LoginCommand;
+import ru.itmo.socket.server.commands.impl.RegisterCommand;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -106,6 +108,14 @@ public class ProcessClientTask extends RecursiveTask<Void> {
             // у других команд по умолчанию - 1 строка вывода, можно если че переопределить для любой команды
             int numberOfOutputLines = serverCommand.getNumberOfOutputLines(commandDto.getArg());
             oos.writeUTF(String.valueOf(numberOfOutputLines));
+
+            // проверка на авторизацию
+            if(!(serverCommand instanceof LoginCommand || serverCommand instanceof RegisterCommand) && !UserContext.getAuthorized()){
+                System.err.printf("[Tech] [ERROR] Неавторизованный пользователь %s не может выполнять ничего кроме login/register%n", UserContext.getLogin());
+                oos.writeUTF("Неавторизованный пользователь не может выполнять ничего кроме login/register");
+                oos.flush();
+                return true; // skip this loop
+            }
 
             try {
                 // выполняем команду!

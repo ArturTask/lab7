@@ -10,17 +10,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.time.format.DateTimeFormatter;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
  * Команда для сохранения коллекции LabWork в XML-файл.
  */
+@Deprecated
 public class SaveCommand implements ServerCommand {
 
     @Override
     public void execute(ObjectOutputStream oos, Object... args) throws IOException {
         String fileName = String.valueOf(args[0]);
-        TreeSet<LabWork> labWorks = LabWorkTreeSetManager.getInstance().getAllElements();
+        SortedSet<LabWork> labWorks = LabWorkTreeSetManager.getInstance().getAllElements();
         if (labWorks.isEmpty()) {
             oos.writeUTF("Коллекция пуста. Нечего сохранять.");
             return;

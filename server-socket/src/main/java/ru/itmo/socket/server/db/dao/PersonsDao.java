@@ -2,7 +2,7 @@ package ru.itmo.socket.server.db.dao;
 
 import ru.itmo.socket.common.entity.Color;
 import ru.itmo.socket.common.entity.Person;
-import ru.itmo.socket.server.concurrent.DbContext;
+import ru.itmo.socket.server.concurrent.DbUserContext;
 import ru.itmo.socket.server.db.exception.SqlRequestException;
 
 import java.sql.*;
@@ -12,7 +12,7 @@ public class PersonsDao {
 
     public Person insert(Person person) {
         String sql = "INSERT INTO persons (name, birthday, height, weight, eye_color) VALUES (?, ?, ?, ?, ?) RETURNING id";
-        try (PreparedStatement st = DbContext.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement st = DbUserContext.getConnection().prepareStatement(sql)) {
             st.setString(1, person.getName());
             st.setTimestamp(2, Timestamp.from(person.getBirthday().toInstant()));
             st.setFloat(3, person.getHeight());
@@ -31,8 +31,12 @@ public class PersonsDao {
     }
 
     public Person findById(int id) {
+        return findById(DbUserContext.getConnection(), id);
+    }
+
+    public Person findById(Connection connection, int id) {
         String sql = "SELECT name, birthday, height, weight, eye_color FROM persons WHERE id = ?";
-        try (PreparedStatement st = DbContext.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement st = connection.prepareStatement(sql)) {
             st.setInt(1, id);
             ResultSet rs = st.executeQuery();
             if (!rs.next()) return null;
@@ -50,7 +54,7 @@ public class PersonsDao {
 
     public void update(int id, Person person) {
         String sql = "UPDATE persons SET name = ?, birthday = ?, height = ?, weight = ?, eye_color = ? WHERE id = ?";
-        try (PreparedStatement st = DbContext.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement st = DbUserContext.getConnection().prepareStatement(sql)) {
             st.setString(1, person.getName());
             st.setTimestamp(2, Timestamp.from(person.getBirthday().toInstant()));
             st.setFloat(3, person.getHeight());

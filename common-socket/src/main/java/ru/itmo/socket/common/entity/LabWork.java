@@ -23,7 +23,7 @@ public class LabWork implements Comparable<LabWork>, Serializable {
 
 
     public LabWork(String name, Coordinates coordinates, long minimalPoint, Difficulty difficulty, Person author) {
-        this.id = generateId(); // Автоматическая генерация id при создании объекта
+        this.id = -1; // Автоматическая генерация id на сервере в БД
         setName(name);
         this.creationDate = LocalDate.now();
         setCoordinates(coordinates);
@@ -32,6 +32,7 @@ public class LabWork implements Comparable<LabWork>, Serializable {
         setAuthor(author);
     }
 
+    @Deprecated
     public static long generateId() {
         return ++lastGeneratedId;
     }

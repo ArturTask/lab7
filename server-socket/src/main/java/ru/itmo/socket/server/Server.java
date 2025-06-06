@@ -41,7 +41,8 @@ public class Server {
     private static void startServer() {
         // загружаем из файла collection.txt изначальные значения
         LabWorkTreeSetManager manager = LabWorkTreeSetManager.getInstance();
-        new XmlCollectionLoader(manager, "collection.txt").load();
+        manager.fetchInitialDataFromDb();
+//        new XmlCollectionLoader(manager, "collection.txt").load();
 
         int port = ConnectionContext.getPort();
 

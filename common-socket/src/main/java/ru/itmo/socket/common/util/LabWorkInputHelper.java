@@ -64,7 +64,7 @@ public class LabWorkInputHelper {
         if (update) {
             labWork.setId(inputId(scanner));
         } else {
-            labWork.setId(LabWork.generateId());
+            labWork.setId(-1);
         }
         labWork.setName(inputName(scanner));
         labWork.setCoordinates(inputCoordinates(scanner));

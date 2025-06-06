@@ -23,9 +23,10 @@ public class LoginCommand implements ServerCommand {
         }
 
         try {
-            usersDao.findByUsername(userDto.getLogin());
+            UserDto user = usersDao.findByUsername(userDto.getLogin());
             UserContext.setLogin(userDto.getLogin());
             UserContext.setAuthorized(true);
+            UserContext.setDbUserId(user.getId());
             oos.writeUTF(userDto.getLogin() + " залогинен!");
         } catch (SqlRequestException e) {
             oos.writeUTF("user с таким login не найден");

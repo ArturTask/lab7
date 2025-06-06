@@ -4,7 +4,7 @@ import ru.itmo.socket.common.entity.Coordinates;
 import ru.itmo.socket.common.entity.Difficulty;
 import ru.itmo.socket.common.entity.LabWork;
 import ru.itmo.socket.common.entity.Person;
-import ru.itmo.socket.server.concurrent.DbContext;
+import ru.itmo.socket.server.concurrent.DbUserContext;
 import ru.itmo.socket.server.db.exception.SqlRequestException;
 
 import java.sql.*;
@@ -28,7 +28,7 @@ public class LabWorksDao {
                 RETURNING id
             """;
 
-            try (PreparedStatement stmt = DbContext.getConnection().prepareStatement(sql)) {
+            try (PreparedStatement stmt = DbUserContext.getConnection().prepareStatement(sql)) {
                 stmt.setString(1, labWork.getName());
                 stmt.setLong(2, labWork.getMinimalPoint());
                 stmt.setString(3, labWork.getDifficulty().name());
@@ -65,7 +65,7 @@ public class LabWorksDao {
             WHERE id = ? AND user_id = ?
         """;
 
-            try (PreparedStatement stmt = DbContext.getConnection().prepareStatement(sql)) {
+            try (PreparedStatement stmt = DbUserContext.getConnection().prepareStatement(sql)) {
                 stmt.setString(1, labWork.getName());
                 stmt.setLong(2, labWork.getMinimalPoint());
                 stmt.setString(3, labWork.getDifficulty().name());
@@ -82,11 +82,15 @@ public class LabWorksDao {
     }
 
     public LabWork findById(long id) {
+        return findById(DbUserContext.getConnection(), id);
+    }
+
+    public LabWork findById(Connection connection, long id) {
         String sql = """
         SELECT name, minimal_point, difficulty, creation_date, coordinates_id, author_id
         FROM lab_works WHERE id = ?
     """;
-        try (PreparedStatement stmt = DbContext.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -96,8 +100,8 @@ public class LabWorksDao {
                 lab.setMinimalPoint(rs.getLong("minimal_point"));
                 lab.setDifficulty(Difficulty.valueOf(rs.getString("difficulty")));
                 lab.setCreationDate(rs.getDate("creation_date").toLocalDate());
-                lab.setCoordinates(coordinatesDao.findById(rs.getInt("coordinates_id")));
-                lab.setAuthor(personDao.findById(rs.getInt("author_id")));
+                lab.setCoordinates(coordinatesDao.findById(connection, rs.getInt("coordinates_id")));
+                lab.setAuthor(personDao.findById(connection, rs.getInt("author_id")));
                 return lab;
             }
             return null;
@@ -106,14 +110,14 @@ public class LabWorksDao {
         }
     }
 
-    public List<LabWork> findAllByUserId(int userId) {
+    public List<LabWork> findAllByUserId(Connection connection, int userId) {
         String sql = "SELECT id FROM lab_works WHERE user_id = ?";
-        try (PreparedStatement stmt = DbContext.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
             List<LabWork> result = new ArrayList<>();
             while (rs.next()) {
-                LabWork lab = findById(rs.getLong("id"));
+                LabWork lab = findById(connection, rs.getLong("id"));
                 if (lab != null) result.add(lab);
             }
             return result;
@@ -124,7 +128,7 @@ public class LabWorksDao {
 
     public boolean remove(long id, int userId) {
         String sql = "DELETE FROM lab_works WHERE id = ? AND user_id = ?";
-        try (PreparedStatement stmt = DbContext.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement stmt = DbUserContext.getConnection().prepareStatement(sql)) {
             stmt.setLong(1, id);
             stmt.setInt(2, userId);
             return stmt.executeUpdate() > 0;
@@ -140,7 +144,7 @@ public class LabWorksDao {
     private int getIdFromSavedCoordinates(Coordinates coordinates) throws SQLException {
         // Простейший хак — найти по полям
         String sql = "SELECT id FROM coordinates WHERE x = ? AND y = ?";
-        try (PreparedStatement stmt = DbContext.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement stmt = DbUserContext.getConnection().prepareStatement(sql)) {
             stmt.setFloat(1, coordinates.getX());
             stmt.setFloat(2, coordinates.getY());
             ResultSet rs = stmt.executeQuery();
@@ -151,7 +155,7 @@ public class LabWorksDao {
 
     private int getIdFromSavedPerson(Person person) throws SQLException {
         String sql = "SELECT id FROM persons WHERE name = ? AND height = ? AND weight = ? AND eye_color = ? AND birthday = ?";
-        try (PreparedStatement stmt = DbContext.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement stmt = DbUserContext.getConnection().prepareStatement(sql)) {
             stmt.setString(1, person.getName());
             stmt.setFloat(2, person.getHeight());
             stmt.setFloat(3, person.getWeight());
