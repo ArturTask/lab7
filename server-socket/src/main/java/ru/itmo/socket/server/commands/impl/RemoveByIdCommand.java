@@ -14,7 +14,7 @@ public class RemoveByIdCommand implements ServerCommand {
         if (LabWorkTreeSetManager.getInstance().removeById(id)) {
             oos.writeUTF("Элемент с id " + id + " успешно удалён!");
         } else {
-            oos.writeUTF("Элемент с id " + id + " не найден!");
+            oos.writeUTF("Не удалось удалить элемент с id " + id);
         }
     }
 }

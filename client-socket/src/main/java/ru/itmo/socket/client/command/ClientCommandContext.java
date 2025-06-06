@@ -28,7 +28,7 @@ public class ClientCommandContext {
         map.put(UPDATE_ID, new UpdateByIdCommand());
         map.put(REMOVE_BY_ID, new RemoveByIdCommand());
         map.put(CLEAR, new DefaultCommand());
-        map.put(SAVE, new SaveCommand());
+//        map.put(SAVE, new SaveCommand()); Deprecated!
         map.put(EXECUTE_SCRIPT, new ExecuteScriptCommand());
         map.put(EXIT, new ExitCommand());
         map.put(ADD_IF_MAX, new AddIfMaxCommand());
@@ -36,7 +36,8 @@ public class ClientCommandContext {
         map.put(FILTER_LESS_THAN_MINIMAL_POINT, new FilterLessThanMinimalPointCommand());
         map.put(PRINT_DESCENDING, new DefaultCommand());
         map.put(PRINT_UNIQUE_AUTHOR, new DefaultCommand());
-        map.put(DISCONNECT_CLIENT, new DisconnectClientCommand());
+        map.put(REGISTER, new RegisterCommand());
+        map.put(LOGIN, new LoginCommand());
         return map;
     }
 

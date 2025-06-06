@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:13.3
+    container_name: postgres_tmp
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: tmp
+      POSTGRES_PASSWORD: tmp
+      POSTGRES_DB: tmp
+    volumes:
+      - tmp_postgres_volume:/var/lib/postgresql/data
+
+volumes:
+  tmp_postgres_volume:

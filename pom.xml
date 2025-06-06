@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>ru.itmo.socket</groupId>
-  <artifactId>lab6-sockets-full</artifactId>
+  <artifactId>lab7</artifactId>
 
   <version>1.0.0</version>
   <packaging>pom</packaging>
@@ -40,6 +40,13 @@
       <version>RELEASE</version>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.3</version>
+    </dependency>
+
   </dependencies>
 
   <build>

@@ -2,10 +2,10 @@ package ru.itmo.socket.client;
 
 import ru.itmo.socket.client.command.ClientCommand;
 import ru.itmo.socket.client.command.ClientCommandContext;
-import ru.itmo.socket.client.command.impl.DisconnectClientCommand;
 import ru.itmo.socket.client.command.impl.ExitCommand;
 import ru.itmo.socket.common.dto.CommandDto;
-import ru.itmo.socket.common.util.SocketContext;
+import ru.itmo.socket.common.exception.AppCommandNotFoundException;
+import ru.itmo.socket.common.util.ConnectionContext;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -35,8 +35,8 @@ public class Client {
 
     private static void connectToServer() throws IOException {
         Scanner scanner = new Scanner(System.in);
-        String host = SocketContext.getHost();
-        int port = SocketContext.getPort();
+        String host = ConnectionContext.getHost();
+        int port = ConnectionContext.getPort();
 
         try (Socket socket = new Socket(host, port);
              ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
@@ -61,42 +61,46 @@ public class Client {
     private static boolean processRemoteCommand(Scanner scanner, ObjectOutputStream oos, ObjectInputStream ois) throws IOException {
         boolean continueWork = true;
 
-        System.out.println("\nВведите команду ");
-        String stringCommand = scanner.nextLine();
+        try {
 
-        // парсим команду
-        ClientCommand clientCommand = ClientCommandContext.getCommand(stringCommand);
-        // это мы получаем доп параметры (если надо в конкретной команде)
-        // например при добавлении пользователя
-        Optional<Object> clientCommandParam = clientCommand.preProcess(scanner);
+            System.out.println("\nВведите команду ");
+            String stringCommand = scanner.nextLine();
 
-        // это если мы отключаемся от сервера - disconnect
-        // или выключаем и сервер и клиент!
-        if (clientCommand instanceof DisconnectClientCommand || clientCommand instanceof ExitCommand) {
-            continueWork = false;
-        }
+            // парсим команду
+            ClientCommand clientCommand = ClientCommandContext.getCommand(stringCommand);
+            // это мы получаем доп параметры (если надо в конкретной команде)
+            // например при добавлении пользователя
+            Optional<Object> clientCommandParam = clientCommand.preProcess(scanner);
 
-        // добавляем доп аргументы если нужно к команде и отправляем на сервер
-        Object arg = clientCommandParam.orElse(null);
-        CommandDto request = new CommandDto(stringCommand, arg);
-
-        oos.writeObject(request);
-        oos.flush();
-        System.out.println("Отправлено серверу: " + request);
-
-        // Получаем ответ от сервера, вначале количество строк, потом сами строки
-        // (это появилось из-за скриптов (команда execute_script), если скрипт, то там с сервера приходит несколько строк)
-        int responseQuantity = Integer.parseInt(ois.readUTF());
-        for (int i = 0; i < responseQuantity; i++) {
-            String response = ois.readUTF();
-            System.out.println("Строка #" + (i + 1) + ": \n");
-            System.out.println("Получено от сервера: " + response);
-
-            // если в скрипте на сервере будет exit, то он пришлет в сообщении AppExit
-            if (response.contains("AppExit") || response.contains("DisconnectClient")) {
+            // это если мы отключаемся от сервера - exit
+            if (clientCommand instanceof ExitCommand) {
                 continueWork = false;
-                break;
             }
+
+            // добавляем доп аргументы если нужно к команде и отправляем на сервер
+            Object arg = clientCommandParam.orElse(null);
+            CommandDto request = new CommandDto(stringCommand, arg);
+
+            oos.writeObject(request);
+            oos.flush();
+            System.out.println("Отправлено серверу: " + request);
+
+            // Получаем ответ от сервера, вначале количество строк, потом сами строки
+            // (это появилось из-за скриптов (команда execute_script), если скрипт, то там с сервера приходит несколько строк)
+            int responseQuantity = Integer.parseInt(ois.readUTF());
+            for (int i = 0; i < responseQuantity; i++) {
+                String response = ois.readUTF();
+                System.out.println("Строка #" + (i + 1) + ": \n");
+                System.out.println("Получено от сервера: " + response);
+
+                // если в скрипте на сервере будет exit, то он пришлет в сообщении AppExit
+                if (response.contains("AppExit") || response.contains("DisconnectClient")) {
+                    continueWork = false;
+                    break;
+                }
+            }
+        } catch (AppCommandNotFoundException appCommandNotFoundException) {
+            System.out.println("Команда не найдена");
         }
 
         return continueWork;

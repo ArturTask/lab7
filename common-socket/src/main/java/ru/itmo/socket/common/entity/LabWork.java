@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 @NoArgsConstructor
 @Getter
@@ -22,7 +23,7 @@ public class LabWork implements Comparable<LabWork>, Serializable {
 
 
     public LabWork(String name, Coordinates coordinates, long minimalPoint, Difficulty difficulty, Person author) {
-        this.id = generateId(); // Автоматическая генерация id при создании объекта
+        this.id = -1; // Автоматическая генерация id на сервере в БД
         setName(name);
         this.creationDate = LocalDate.now();
         setCoordinates(coordinates);
@@ -31,6 +32,7 @@ public class LabWork implements Comparable<LabWork>, Serializable {
         setAuthor(author);
     }
 
+    @Deprecated
     public static long generateId() {
         return ++lastGeneratedId;
     }
@@ -56,22 +58,10 @@ public class LabWork implements Comparable<LabWork>, Serializable {
         return Long.compare(this.id, labWork.id);
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public long getId() {
-        return id;
-    }
-
     public void setName(String name) {
         if (name.trim().equalsIgnoreCase("null") || name.trim().isEmpty())
             throw new IllegalArgumentException("Значение поля name не может быть равно null и не может быть пустым!");
         this.name = name;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setCoordinates(Coordinates coordinates) {
@@ -80,26 +70,10 @@ public class LabWork implements Comparable<LabWork>, Serializable {
         this.coordinates = coordinates;
     }
 
-    public Coordinates getCoordinates() {
-        return coordinates;
-    }
-
     public void setMinimalPoint(long minimalPoint) {
         if (minimalPoint <= 0)
             throw new IllegalArgumentException("Значение поля minimalPoint должно быть больше 0!");
         this.minimalPoint = minimalPoint;
-    }
-
-    public long getMinimalPoint() {
-        return minimalPoint;
-    }
-
-    public void setDifficulty(Difficulty difficulty) {
-        this.difficulty = difficulty;
-    }
-
-    public Difficulty getDifficulty() {
-        return difficulty;
     }
 
     public void setAuthor(Person author) {
@@ -108,8 +82,10 @@ public class LabWork implements Comparable<LabWork>, Serializable {
         this.author = author;
     }
 
-    public Person getAuthor() {
-        return author;
+    public static LabWork generateDefault() {
+        return new LabWork("defaultName", new Coordinates(0, 0), 1, Difficulty.NORMAL,
+                new Person("no-name", ZonedDateTime.now(), 1f, 1f, Color.BROWN));
     }
+
 }
 

@@ -13,21 +13,10 @@ public class UpdateByIdCommand implements ServerCommand {
         LabWork updatedLabWork = (LabWork) args[0];
         long id = updatedLabWork.getId();
 
-        if (!LabWorkTreeSetManager.getInstance().containsId(id)) {
-            oos.writeUTF("Элемент с id " + id + " не найден.");
-            return;
-        }
-
-        // Получаем текущий элемент
-        LabWork currentLabWork = LabWorkTreeSetManager.getInstance().getAllElements().stream()
-                .filter(lw -> lw.getId() == id)
-                .findFirst()
-                .orElse(null);
-
         if (LabWorkTreeSetManager.getInstance().updateById(id, updatedLabWork)) {
             oos.writeUTF("Элемент успешно обновлён.");
         } else {
-            oos.writeUTF("Ошибка обновления элемента с id " + id);
+            oos.writeUTF("Ошибка обновления элемента с id = " + id);
         }
     }
 

@@ -1,36 +1,54 @@
 package ru.itmo.socket.server;
 
-import ru.itmo.socket.common.dto.CommandDto;
-import ru.itmo.socket.common.exception.AppExitException;
-import ru.itmo.socket.common.util.SocketContext;
-import ru.itmo.socket.server.commands.ServerCommand;
-import ru.itmo.socket.server.commands.ServerCommandContext;
-import ru.itmo.socket.server.commands.impl.CommandHistory;
+import ru.itmo.socket.common.util.ConnectionContext;
+import ru.itmo.socket.server.concurrent.ProcessClientTask;
+import ru.itmo.socket.server.db.DatabaseConfig;
+import ru.itmo.socket.server.db.DatabaseInitializer;
 import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
 import ru.itmo.socket.server.manager.XmlCollectionLoader;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server {
 
+    private static final ForkJoinPool forkJoinPool = new ForkJoinPool(ConnectionContext.getMaxConnections());
+    private static final AtomicInteger CONNECTION_COUNTER = new AtomicInteger(0);
+
+    // concurrent TreeSet<> (берем первый доступный незанятый номер и присваиваем клиенту)
+    private static final ConcurrentSkipListSet<Integer> AVAILABLE_IDS = initAvailableIds();
+
     public static void main(String[] args) {
+        initDb();
         startServer();
+    }
+
+    private static void initDb() {
+        try(Connection connection = DatabaseConfig.getConnection()) {
+            DatabaseInitializer.init(connection);
+        } catch (SQLException e) {
+            System.out.println("[Tech] [ERROR] блин че то с базой");
+            throw new RuntimeException(e);
+        }
     }
 
     private static void startServer() {
         // загружаем из файла collection.txt изначальные значения
         LabWorkTreeSetManager manager = LabWorkTreeSetManager.getInstance();
-        new XmlCollectionLoader(manager, "collection.txt").load();
+        manager.fetchInitialDataFromDb();
+//        new XmlCollectionLoader(manager, "collection.txt").load();
 
-        int port = SocketContext.getPort();
+        int port = ConnectionContext.getPort();
 
         // стартуем сервер
         try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Макс. количество подключений = " + ConnectionContext.getMaxConnections());
             System.out.println("Сервер запущен и ожидает подключения...");
 
             // ждем подключений
@@ -43,61 +61,29 @@ public class Server {
     }
 
     private static void acceptConnection(ServerSocket serverSocket) throws IOException, ClassNotFoundException {
-        try (Socket clientSocket = serverSocket.accept();
-             ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
-             ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream())) {
-
-            System.out.println("Клиент подключился: " + clientSocket.getInetAddress());
-
-            while (true) {
-                // в цикле обрабатываем команды с клиентской стороны подключения клиентов
-                if (!sendToClient(ois, oos)) {
-                    break;
-                }
+        while (true) {
+            // accept new connection
+            Socket clientSocket = serverSocket.accept();
+            if (CONNECTION_COUNTER.get() == ConnectionContext.getMaxConnections()) {
+                System.out.println("Максимальное число подключений достигнуто, отказ в подключении: " + clientSocket.getInetAddress());
+                clientSocket.close();
+                continue;
             }
-        } catch (EOFException eofException) {
-            System.err.println("Клиент неожиданно прекратил соединение, не удалось прочитать команду");
+
+            forkJoinPool.submit(new ProcessClientTask(clientSocket, AVAILABLE_IDS, CONNECTION_COUNTER));
+
         }
     }
 
     /**
-     * метод обработки запросов от клиента
-     *
-     * @return true - если любая команда кроме 'exit', false - если 'exit'
+     * Генерим что-то вроде номерков, по количеству доступных соединений - после отключения
+     * просто переиспользуем номерки пользователей так они не будут плодиться
      */
-    private static boolean sendToClient(ObjectInputStream ois, ObjectOutputStream oos) throws IOException, ClassNotFoundException {
-        boolean continueWorking = true;
-
-        // Чтение запроса от клиента (в объект)
-        CommandDto commandDto = (CommandDto) ois.readObject();
-        System.out.println("Получено от клиента: " + commandDto);
-
-        String commandName = commandDto.getCommandName();
-        ServerCommand serverCommand = ServerCommandContext.getCommand(commandName);
-
-        if (serverCommand != null) {
-            // кидаем клиенту количество строк вывода (которое ему надо будет считать) из-за СКРИПТА (команда execute_script),
-            // потому что в скрипте может быть много команд :(
-            // у других команд по умолчанию - 1 строка вывода, можно если че переопределить для любой команды
-            int numberOfOutputLines = serverCommand.getNumberOfOutputLines(commandDto.getArg());
-            oos.writeUTF(String.valueOf(numberOfOutputLines));
-
-            try {
-                // выполняем команду!
-                serverCommand.execute(oos, commandDto.getArg());
-            } catch (AppExitException exitException) {
-                // AppExitException бросается если команда ExitCommand
-                // (через Exception, потому что в скрипте может быть exit => надо обработать сразу же)
-                continueWorking = false;
-            }
-            CommandHistory.addCommand(commandName);
-        } else {
-            System.out.println("Команда не найдена! Введите 'help' для получения списка команд.");
+    private static ConcurrentSkipListSet<Integer> initAvailableIds() {
+        ConcurrentSkipListSet<Integer> arrayBlockingQueue = new ConcurrentSkipListSet<>();
+        for (int i = 0; i < ConnectionContext.getMaxConnections(); i++) {
+            arrayBlockingQueue.add(i + 1);
         }
-        oos.flush();
-        System.out.println("Отправлено клиенту вывод команды: " + commandName);
-
-
-        return continueWorking;
+        return arrayBlockingQueue;
     }
 }
