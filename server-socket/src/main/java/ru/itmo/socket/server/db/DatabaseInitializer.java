@@ -20,37 +20,43 @@ public class DatabaseInitializer {
                             );
                         """);
 
-            stmt.execute("""
-                        CREATE TABLE IF NOT EXISTS coordinates (
-                            id SERIAL PRIMARY KEY,
-                            x  REAL  NOT NULL,
-                            y  REAL  NOT NULL
-                        );
-                    """);
 
             stmt.execute("""
-                        CREATE TABLE IF NOT EXISTS persons (
-                            id SERIAL PRIMARY KEY,
-                            name      VARCHAR(255),
-                            birthday  TIMESTAMP,
-                            height    REAL,
-                            weight    REAL,
-                            eye_color VARCHAR(50)
-                        );
-                    """);
+                    CREATE TABLE IF NOT EXISTS coordinates (
+                        id SERIAL PRIMARY KEY,
+                        x  REAL,
+                        y  REAL
+                    );
+                """);
 
+            // --- houses ---
             stmt.execute("""
-                        CREATE TABLE IF NOT EXISTS lab_works (
-                            id            SERIAL PRIMARY KEY,
-                            name          VARCHAR(255) NOT NULL,
-                            minimal_point BIGINT       NOT NULL,
-                            difficulty    VARCHAR(50),
-                            creation_date DATE,
-                            coordinates_id INT REFERENCES coordinates(id) ON DELETE CASCADE,
-                            author_id      INT REFERENCES persons(id)     ON DELETE CASCADE,
-                            user_id        INT REFERENCES users(id)
-                        );
-                    """);
+                    CREATE TABLE IF NOT EXISTS houses (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL,
+                        year INT,
+                        number_of_floors BIGINT,
+                        number_of_flats_on_floor BIGINT,
+                        number_of_lifts BIGINT
+                    );
+                """);
+
+            // --- flats ---
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS flats (
+                        id              SERIAL PRIMARY KEY,
+                        name            VARCHAR(255) NOT NULL,
+                        coordinates_id  INT REFERENCES coordinates(id) ON DELETE CASCADE,
+                        creation_date   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        area            DOUBLE PRECISION,
+                        number_of_rooms BIGINT,
+                        number_of_bathrooms INT NOT NULL,
+                        central_heating BOOLEAN NOT NULL,
+                        view            VARCHAR(20) NOT NULL,
+                        house_id        INT REFERENCES houses(id) ON DELETE CASCADE,
+                        user_id         INT REFERENCES users(id)
+                    );
+                """);
             System.out.println("[Tech] [INFO] проинициализировали БД, фух...");
         }
     }

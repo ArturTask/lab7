@@ -19,7 +19,7 @@ public enum AppCommand {
     UPDATE_ID("update_id"),
     REMOVE_BY_ID("remove_by_id"),
     CLEAR("clear"),
-    SAVE("save"),
+//    SAVE("save"),
     EXECUTE_SCRIPT("execute_script"),
     EXIT("exit"),
     REMOVE_AT("remove_at"),
@@ -28,7 +28,10 @@ public enum AppCommand {
     GROUP_COUNTING_BY_ID("group_counting_by_id"),
     COUNT_BY_NUMBER_OF_BATHROOMS("count_by_number_of_bathrooms"),
     COUNT_GREATER_THAN_CENTRAL_HEATING("count_greater_than_central_heating"),
-    DISCONNECT_CLIENT("disconnect");
+    LOGIN("login"),
+    REGISTER("register")
+//    DISCONNECT_CLIENT("disconnect")
+    ;
 
     private final String value;
 

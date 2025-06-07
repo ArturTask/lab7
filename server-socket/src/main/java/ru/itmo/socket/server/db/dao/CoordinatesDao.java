@@ -1,6 +1,7 @@
 package ru.itmo.socket.server.db.dao;
 
-import ru.itmo.socket.common.entity.Coordinates;
+
+import ru.itmo.socket.common.data.Coordinates;
 import ru.itmo.socket.server.concurrent.DbUserContext;
 import ru.itmo.socket.server.db.exception.SqlRequestException;
 

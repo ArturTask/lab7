@@ -5,7 +5,6 @@ import ru.itmo.socket.common.dto.CommandDto;
 import ru.itmo.socket.common.exception.AppExitException;
 import ru.itmo.socket.server.commands.ServerCommand;
 import ru.itmo.socket.server.commands.ServerCommandContext;
-import ru.itmo.socket.server.commands.impl.CommandHistory;
 import ru.itmo.socket.server.commands.impl.ExitCommand;
 import ru.itmo.socket.server.commands.impl.LoginCommand;
 import ru.itmo.socket.server.commands.impl.RegisterCommand;
@@ -17,7 +16,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.RecursiveTask;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
@@ -126,7 +125,6 @@ public class ProcessClientTask implements Runnable {
                 // (через Exception, потому что в скрипте может быть exit => надо обработать сразу же)
                 continueWorking = false;
             }
-            CommandHistory.addCommand(commandName);
         } else {
             System.out.println("Команда не найдена! Введите 'help' для получения списка команд.");
         }

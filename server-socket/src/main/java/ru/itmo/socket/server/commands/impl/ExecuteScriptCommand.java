@@ -1,7 +1,7 @@
 package ru.itmo.socket.server.commands.impl;
 
-import ru.itmo.socket.server.commands.ServerCommand;
 import ru.itmo.socket.server.commands.ScriptExecutor;
+import ru.itmo.socket.server.commands.ServerCommand;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -30,7 +30,6 @@ public class ExecuteScriptCommand implements ServerCommand {
         return ScriptExecutor.countNumberOfCommands(fileName);
     }
 }
-
 
 
 

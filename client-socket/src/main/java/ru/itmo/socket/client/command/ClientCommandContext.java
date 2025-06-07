@@ -27,7 +27,7 @@ public class ClientCommandContext {
         map.put(UPDATE_ID, new UpdateByIdCommand());
         map.put(REMOVE_BY_ID, new RemoveByIdCommand());
         map.put(CLEAR, new DefaultCommand());
-        map.put(SAVE, new SaveCommand());
+//        map.put(SAVE, new SaveCommand());
         map.put(EXECUTE_SCRIPT, new ExecuteScriptCommand());
         map.put(EXIT, new ExitCommand());
         map.put(REMOVE_AT, new RemoveAt());
@@ -36,7 +36,9 @@ public class ClientCommandContext {
         map.put(GROUP_COUNTING_BY_ID, new GroupContingById());
         map.put(COUNT_BY_NUMBER_OF_BATHROOMS, new CountByNumberOfBathrooms());
         map.put(COUNT_GREATER_THAN_CENTRAL_HEATING, new CountGreaterThanCentralHeating());
-        map.put(DISCONNECT_CLIENT, new DisconnectClientCommand());
+//        map.put(DISCONNECT_CLIENT, new DisconnectClientCommand());
+        map.put(LOGIN, new LoginCommand());
+        map.put(REGISTER, new RegisterCommand());
         return map;
     }
 

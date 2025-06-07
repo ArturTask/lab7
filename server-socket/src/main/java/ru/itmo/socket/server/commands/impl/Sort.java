@@ -6,10 +6,10 @@ import ru.itmo.socket.server.manager.Storage;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
-public class ShowCommand implements ServerCommand {
+public class Sort implements ServerCommand {
     @Override
     public void execute(ObjectOutputStream oos, Object... args) throws IOException {
-        String allElements = Storage.getInstance().getAllElementsAsString();
-        oos.writeUTF(allElements);
+        Storage.getInstance().sort();
+        oos.writeUTF("Коллекция отсортирована");
     }
 }
