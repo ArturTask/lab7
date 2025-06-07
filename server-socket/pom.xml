@@ -4,7 +4,7 @@
     <parent>
         <groupId>ru.itmo.socket</groupId>
         <artifactId>lab7</artifactId>
-        <version>1.0.0</version>
+        <version>3.0.0</version>
     </parent>
 
     <groupId>ru.itmo.socket.server</groupId>

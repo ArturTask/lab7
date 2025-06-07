@@ -5,7 +5,6 @@ import ru.itmo.socket.client.command.ClientCommand;
 import java.util.Optional;
 import java.util.Scanner;
 
-@Deprecated
 public class SaveCommand implements ClientCommand {
 
     @Override

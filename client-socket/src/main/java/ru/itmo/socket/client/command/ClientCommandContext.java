@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static ru.itmo.socket.common.command.AppCommand.*;
-import static ru.itmo.socket.common.command.AppCommand.PRINT_UNIQUE_AUTHOR;
 
 /**
  * Some commands require input values,
@@ -28,16 +27,16 @@ public class ClientCommandContext {
         map.put(UPDATE_ID, new UpdateByIdCommand());
         map.put(REMOVE_BY_ID, new RemoveByIdCommand());
         map.put(CLEAR, new DefaultCommand());
-//        map.put(SAVE, new SaveCommand()); Deprecated!
+        map.put(SAVE, new SaveCommand());
         map.put(EXECUTE_SCRIPT, new ExecuteScriptCommand());
         map.put(EXIT, new ExitCommand());
-        map.put(ADD_IF_MAX, new AddIfMaxCommand());
-        map.put(HISTORY, new DefaultCommand());
-        map.put(FILTER_LESS_THAN_MINIMAL_POINT, new FilterLessThanMinimalPointCommand());
-        map.put(PRINT_DESCENDING, new DefaultCommand());
-        map.put(PRINT_UNIQUE_AUTHOR, new DefaultCommand());
-        map.put(REGISTER, new RegisterCommand());
-        map.put(LOGIN, new LoginCommand());
+        map.put(REMOVE_AT, new RemoveAt());
+        map.put(REMOVE_LOVER, new RemoveLower());
+        map.put(SORT, new DefaultCommand());
+        map.put(GROUP_COUNTING_BY_ID, new GroupContingById());
+        map.put(COUNT_BY_NUMBER_OF_BATHROOMS, new CountByNumberOfBathrooms());
+        map.put(COUNT_GREATER_THAN_CENTRAL_HEATING, new CountGreaterThanCentralHeating());
+        map.put(DISCONNECT_CLIENT, new DisconnectClientCommand());
         return map;
     }
 
