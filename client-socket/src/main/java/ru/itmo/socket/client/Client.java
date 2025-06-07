@@ -21,7 +21,7 @@ public class Client {
         while (true) {
             try {
                 connectToServer();
-                break; // finished with Exit or Disconnect
+                break; // finished with Exit
             } catch (ConnectException cE) {
                 System.err.println("Server unreachable, waiting for server to start...");
                 Thread.sleep(5_000); // подождем перед повтором подключения
@@ -56,7 +56,7 @@ public class Client {
     }
 
     /**
-     * @return true - если любая команда кроме 'exit', false - если 'exit' и 'disconnect'
+     * @return true - если любая команда кроме 'exit', false - если 'exit'
      */
     private static boolean processRemoteCommand(Scanner scanner, ObjectOutputStream oos, ObjectInputStream ois) throws IOException {
         boolean continueWork = true;
@@ -94,7 +94,7 @@ public class Client {
                 System.out.println("Получено от сервера: " + response);
 
                 // если в скрипте на сервере будет exit, то он пришлет в сообщении AppExit
-                if (response.contains("AppExit") || response.contains("DisconnectClient")) {
+                if (response.contains("AppExit")) {
                     continueWork = false;
                     break;
                 }
