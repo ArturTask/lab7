@@ -21,6 +21,10 @@ public class DbUserContext {
         THREAD_LOCAL_DB_CONNECTION.set(connection);
     }
 
+    public static void inheritConnection(Connection connection) throws SQLException {
+        THREAD_LOCAL_DB_CONNECTION.set(connection);
+    }
+
     public static Connection getConnection() {
         Connection conn = THREAD_LOCAL_DB_CONNECTION.get();
         if (conn == null) {

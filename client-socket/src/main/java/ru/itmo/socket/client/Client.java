@@ -15,8 +15,10 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Client {
+    private static final AtomicBoolean active = new AtomicBoolean(true);
 
     public static void main(String[] args) throws InterruptedException {
         while (true) {
@@ -49,10 +51,8 @@ public class Client {
             System.out.println("Подключено к серверу " + host + ":" + port);
 
 
-            while (true) {
-                if (!processRemoteCommand(scanner, oos, ois)) {
-                    break;
-                }
+            while (active.get()) {
+                processRemoteCommand(scanner, oos, ois);
             }
 
         }
@@ -88,20 +88,34 @@ public class Client {
             oos.flush();
             System.out.println("Отправлено серверу: " + request);
 
-            // Получаем ответ от сервера, вначале количество строк, потом сами строки
-            // (это появилось из-за скриптов (команда execute_script), если скрипт, то там с сервера приходит несколько строк)
-            int responseQuantity = Integer.parseInt(ois.readUTF());
-            for (int i = 0; i < responseQuantity; i++) {
-                String response = ois.readUTF();
-                System.out.println("Строка #" + (i + 1) + ": \n");
-                System.out.println("Получено от сервера: " + response);
+            Thread thread = new Thread(() -> {
+                try {
+                    // Получаем ответ от сервера, вначале количество строк, потом сами строки (это появилось из-за скриптов (команда execute_script), если скрипт, то там с сервера приходит несколько строк)
+                    int responseQuantity = Integer.parseInt(ois.readUTF());
+                    for (int i = 0; i < responseQuantity; i++) {
+                        String response = ois.readUTF();
+                        System.out.println("Строка #" + (i + 1) + ": \n");
+                        System.out.println("Получено от сервера: " + response);
 
-                // если в скрипте на сервере будет exit, то он пришлет в сообщении AppExit
-                if (response.contains("AppExit")) {
-                    continueWork = false;
-                    break;
+                        // если в скрипте на сервере будет exit, то он пришлет в сообщении AppExit
+                        if (response.contains("AppExit")) {
+                            active.compareAndSet(true, false);
+                            break;
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.printf("Произошла ошибка при отправке команды %s", stringCommand);
+                    e.printStackTrace();
                 }
-            }
+            });
+            thread.setDaemon(false);
+            thread.start();
+
+//            try {
+//                thread.join();
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
         } catch (AppCommandNotFoundException appCommandNotFoundException) {
             System.out.println("Команда не найдена");
         }
