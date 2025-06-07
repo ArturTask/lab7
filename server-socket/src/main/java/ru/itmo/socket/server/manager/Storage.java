@@ -12,9 +12,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public class Storage {
+    private static final Map<Integer, Lock> locks = new HashMap<>();
+
     private static Storage instance;
 
     private final FlatDao flatDao = new FlatDao();
@@ -32,16 +36,28 @@ public class Storage {
     }
 
     public boolean add(Flat element) {
-        List<Flat> list = getCollectionOfCurrentUser();
-        if (!trySaveUserToDb(element)) return false;
-        list.add(element);
-        return true;
+        Lock lock = getLock();
+        try {
+            lock.lock();
+            List<Flat> list = getCollectionOfCurrentUser();
+            if (!trySaveUserToDb(element)) return false;
+            list.add(element);
+            return true;
+        } finally {
+            lock.unlock();
+        }
     }
 
     // Очистка всей коллекции
     public void clear() {
-        List<Flat> list = getCollectionOfCurrentUser();
-        list.clear();
+        Lock lock = getLock();
+        try {
+            lock.lock();
+            List<Flat> list = getCollectionOfCurrentUser();
+            list.clear();
+        } finally {
+            lock.unlock();
+        }
     }
 
     // Метод для получения информации о коллекции
@@ -70,23 +86,29 @@ public class Storage {
 
     // Метод для получения строкового представления всех элементов коллекции
     public String getAllElementsAsString() {
-        if (objectsMap.isEmpty()) {
-            return "Коллекция пуста.";
+        Lock lock = getLock();
+        try {
+            lock.lock();
+            if (objectsMap.isEmpty()) {
+                return "Коллекция пуста.";
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append("[\n");
+            objectsMap.forEach((userId, list) -> {
+                        UserDto user = usersDao.findById(userId);
+                        sb.append(("USER %s: %n" +
+                                "%s%n" +
+                                "----------------%n %n")
+                                .formatted(user.getLogin(), list));
+                    }
+            );
+
+
+            sb.append("\n]");
+            return sb.toString();
+        } finally {
+            lock.unlock();
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append("[\n");
-        objectsMap.forEach((userId, list) -> {
-                    UserDto user = usersDao.findById(userId);
-                    sb.append(("USER %s: %n" +
-                            "%s%n" +
-                            "----------------%n %n")
-                            .formatted(user.getLogin(), list));
-                }
-        );
-
-
-        sb.append("\n]");
-        return sb.toString();
     }
 
     // Обновление элемента с указанным id: безопасное удаление старого элемента и добавление нового (с сохранённым id)
@@ -213,14 +235,20 @@ public class Storage {
     }
 
     private List<Flat> getCollectionOfCurrentUser() {
-        Integer dbUserId = UserContext.getDbUserId();
-        List<Flat> collection = objectsMap.get(dbUserId);
+        Lock lock = getLock();
+        try {
+            lock.lock();
+            Integer dbUserId = UserContext.getDbUserId();
+            List<Flat> collection = objectsMap.get(dbUserId);
 
-        if (collection == null) {
-            collection = new LinkedList<>();
-            objectsMap.put(dbUserId, collection);
+            if (collection == null) {
+                collection = new LinkedList<>();
+                objectsMap.put(dbUserId, collection);
+            }
+            return collection;
+        } finally {
+            lock.unlock();
         }
-        return collection;
     }
 
 
@@ -243,5 +271,16 @@ public class Storage {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private Lock getLock() {
+        Integer dbUserId = UserContext.getDbUserId();
+        Lock lockOfUser = locks.get(dbUserId);
+
+        if (lockOfUser == null) {
+            lockOfUser = new ReentrantLock();
+            locks.put(dbUserId, lockOfUser);
+        }
+        return lockOfUser;
     }
 }
