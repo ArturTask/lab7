@@ -56,12 +56,21 @@ public class LabWorksDao {
             // Обновим координаты
             coordinatesDao.update(labWork.getId(), labWork.getCoordinates());
 
-            // Обновим автора
-            personDao.update(getIdFromSavedPerson(labWork.getAuthor()), labWork.getAuthor());
-
+            Person requestAuthor = labWork.getAuthor();
+            int idFromSavedPerson;
+            try {
+                // Обновим автора
+                idFromSavedPerson = getIdFromSavedPerson(requestAuthor);
+                personDao.update(idFromSavedPerson, requestAuthor);
+            }
+            catch (SqlRequestException | SQLException e){
+                // если новый - то сохраняем нового
+                personDao.insert(requestAuthor);
+                idFromSavedPerson = getIdFromSavedPerson(requestAuthor);
+            }
             String sql = """
             UPDATE lab_works
-            SET name = ?, minimal_point = ?, difficulty = ?, creation_date = ?
+            SET name = ?, minimal_point = ?, difficulty = ?, author_id = ?
             WHERE id = ? AND user_id = ?
         """;
 
@@ -69,7 +78,7 @@ public class LabWorksDao {
                 stmt.setString(1, labWork.getName());
                 stmt.setLong(2, labWork.getMinimalPoint());
                 stmt.setString(3, labWork.getDifficulty().name());
-                stmt.setDate(4, Date.valueOf(labWork.getCreationDate()));
+                stmt.setInt(4, idFromSavedPerson);
                 stmt.setLong(5, labWork.getId());
                 stmt.setInt(6, userId);
 

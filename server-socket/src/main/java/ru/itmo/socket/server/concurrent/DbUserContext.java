@@ -42,22 +42,3 @@ public class DbUserContext {
         }
     }
 }
-
-
-/*
-ExecutorService pool = Executors.newFixedThreadPool(3);
-
-while (true) {
-    Socket clientSocket = serverSocket.accept();
-    pool.submit(() -> {
-        try {
-            ConnectionManager.connectToDatabase(); // ставим ThreadLocal
-            // handle client
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            ConnectionManager.disconnect(); // САМОЕ ВАЖНОЕ!!!
-        }
-    });
-}
- */

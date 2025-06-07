@@ -23,7 +23,14 @@ public class LoginCommand implements ServerCommand {
         }
 
         try {
+            // про доп. ветку README (+ tg продублирую)
+            // todo подключение к базе
+            // todo про client intelliJ
             UserDto user = usersDao.findByUsername(userDto.getLogin());
+            if (!user.getPassword().equalsIgnoreCase(userDto.getPassword())) {
+                oos.writeUTF("Неверный пароль пользователя");
+                return;
+            }
             UserContext.setLogin(userDto.getLogin());
             UserContext.setAuthorized(true);
             UserContext.setDbUserId(user.getId());

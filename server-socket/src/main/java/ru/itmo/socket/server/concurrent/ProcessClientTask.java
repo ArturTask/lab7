@@ -113,15 +113,17 @@ public class ProcessClientTask implements Runnable {
         // проверка на авторизацию
         if (!(serverCommand instanceof LoginCommand || serverCommand instanceof RegisterCommand || serverCommand instanceof ExitCommand)
                 && !UserContext.getAuthorized()) {
-            System.err.printf("[Tech] [ERROR] Неавторизованный пользователь %s не может выполнять ничего кроме login/register%n", UserContext.getLogin());
-            oos.writeUTF("Неавторизованный пользователь не может выполнять ничего кроме login/register");
+            System.err.printf("[Tech] [ERROR] Неавторизованный пользователь %s не может выполнять ничего кроме login/register/exit%n", UserContext.getLogin());
+            oos.writeUTF("Неавторизованный пользователь не может выполнять ничего кроме login/register/exit");
             oos.flush();
             return; // skip this loop
         } else if (serverCommand instanceof LoginCommand || serverCommand instanceof RegisterCommand || serverCommand instanceof ExitCommand) {
             // execute immediately
             try {
+                // выполняем команду!
                 serverCommand.execute(oos, commandDto.getArg());
-            } catch (AppExitException ignore){}
+            } catch (AppExitException ignore) {
+            }
             oos.flush();
             System.out.printf("Отправлено клиенту [%s] вывод команды: %s%n", UserContext.getLogin(), commandName);
             return;

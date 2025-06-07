@@ -3,11 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>ru.itmo.socket</groupId>
-  <artifactId>lab6-sockets-full</artifactId>
+  <artifactId>lab7</artifactId>
 
-  <version>1.0.0</version>
+  <version>3.0.0</version>
   <packaging>pom</packaging>
-  <name>lab6-sockets-full</name>
 
 
   <modules>
