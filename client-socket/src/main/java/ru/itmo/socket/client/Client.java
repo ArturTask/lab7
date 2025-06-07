@@ -15,10 +15,13 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Client {
     private static final AtomicBoolean active = new AtomicBoolean(true);
+    private static final ExecutorService service = Executors.newCachedThreadPool();
 
     public static void main(String[] args) throws InterruptedException {
         while (true) {
@@ -54,6 +57,7 @@ public class Client {
             while (active.get()) {
                 processRemoteCommand(scanner, oos, ois);
             }
+            service.shutdownNow();
 
         }
     }
@@ -88,7 +92,7 @@ public class Client {
             oos.flush();
             System.out.println("Отправлено серверу: " + request);
 
-            Thread thread = new Thread(() -> {
+            service.submit(() -> {
                 try {
                     // Получаем ответ от сервера, вначале количество строк, потом сами строки (это появилось из-за скриптов (команда execute_script), если скрипт, то там с сервера приходит несколько строк)
                     int responseQuantity = Integer.parseInt(ois.readUTF());
@@ -108,14 +112,7 @@ public class Client {
                     e.printStackTrace();
                 }
             });
-            thread.setDaemon(false);
-            thread.start();
 
-//            try {
-//                thread.join();
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
         } catch (AppCommandNotFoundException appCommandNotFoundException) {
             System.out.println("Команда не найдена");
         }
