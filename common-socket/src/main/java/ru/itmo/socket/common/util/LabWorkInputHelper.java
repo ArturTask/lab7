@@ -55,17 +55,22 @@ public class LabWorkInputHelper {
     // Основной публичный метод, который собирает все части объекта LabWork.
     public static LabWork readLabWork(Scanner scanner, boolean update) {
 
-        if (inputIsGenerateDefault(scanner)) {
-            return LabWork.generateDefault();
-        }
-
         LabWork labWork = new LabWork();
 
+        long id;
         if (update) {
-            labWork.setId(inputId(scanner));
+            id = inputId(scanner);
         } else {
-            labWork.setId(-1);
+            id = -1L;
         }
+
+        if (inputIsGenerateDefault(scanner)) {
+            LabWork generated = LabWork.generateDefault();
+            generated.setId(id);
+            return generated;
+        }
+
+        labWork.setId(id);
         labWork.setName(inputName(scanner));
         labWork.setCoordinates(inputCoordinates(scanner));
         labWork.setMinimalPoint(inputMinimalPoint(scanner));

@@ -12,6 +12,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -25,6 +26,8 @@ public class Client {
             } catch (ConnectException cE) {
                 System.err.println("Server unreachable, waiting for server to start...");
                 Thread.sleep(5_000); // подождем перед повтором подключения
+            } catch (SocketException socketException) {
+                System.err.println("Сервер отказал в подключении");
             } catch (Exception e) {
                 System.err.println("Ошибка клиента: " + e.getMessage());
                 e.printStackTrace();

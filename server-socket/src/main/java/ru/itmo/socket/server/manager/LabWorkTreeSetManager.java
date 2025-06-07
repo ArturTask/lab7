@@ -4,7 +4,6 @@ package ru.itmo.socket.server.manager;
 import ru.itmo.socket.common.dto.UserDto;
 import ru.itmo.socket.common.entity.LabWork;
 import ru.itmo.socket.common.entity.Person;
-import ru.itmo.socket.server.concurrent.DbUserContext;
 import ru.itmo.socket.server.concurrent.UserContext;
 import ru.itmo.socket.server.db.DatabaseConfig;
 import ru.itmo.socket.server.db.dao.LabWorksDao;
@@ -93,7 +92,7 @@ public class LabWorkTreeSetManager {
             if (lw.getId() == id) {
                 iterator.remove();
                 newElement.setId(id);
-                return tryUpdateUserFromDb(newElement) && labWorks.add(newElement);
+                return tryUpdateInDb(newElement) && labWorks.add(newElement);
             }
         }
         return false;
@@ -166,15 +165,17 @@ public class LabWorkTreeSetManager {
             labWorksDao.insert(element, UserContext.getDbUserId());
             return true;
         } catch (SqlRequestException e) {
+            e.printStackTrace();
             return false;
         }
     }
 
-    private boolean tryUpdateUserFromDb(LabWork element) {
+    private boolean tryUpdateInDb(LabWork element) {
         try {
             labWorksDao.update(element, UserContext.getDbUserId());
             return true;
         } catch (SqlRequestException e) {
+            e.printStackTrace();
             return false;
         }
     }
