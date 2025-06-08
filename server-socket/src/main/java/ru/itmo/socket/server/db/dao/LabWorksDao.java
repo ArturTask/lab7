@@ -135,11 +135,10 @@ public class LabWorksDao {
         }
     }
 
-    public boolean remove(long id, int userId) {
-        String sql = "DELETE FROM lab_works WHERE id = ? AND user_id = ?";
+    public boolean remove(long id) {
+        String sql = "DELETE FROM lab_works WHERE id = ?";
         try (PreparedStatement stmt = DbUserContext.getConnection().prepareStatement(sql)) {
             stmt.setLong(1, id);
-            stmt.setInt(2, userId);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new SqlRequestException(e);
