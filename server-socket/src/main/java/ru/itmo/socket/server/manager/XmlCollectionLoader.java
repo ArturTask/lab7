@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
  * Загрузчик коллекции LabWork из XML-файла при запуске программы.
  * Размещается в отдельном пакете loader, чтобы не конфликтовать с остальными классами.
  */
+@Deprecated // в 7 лабе не нужна загрузка из файла
 public class XmlCollectionLoader {
     private final LabWorkTreeSetManager manager;
     private final String xmlFilePath;

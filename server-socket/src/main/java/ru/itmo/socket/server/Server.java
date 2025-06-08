@@ -5,7 +5,6 @@ import ru.itmo.socket.server.concurrent.ProcessClientTask;
 import ru.itmo.socket.server.db.DatabaseConfig;
 import ru.itmo.socket.server.db.DatabaseInitializer;
 import ru.itmo.socket.server.manager.LabWorkTreeSetManager;
-import ru.itmo.socket.server.manager.XmlCollectionLoader;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -39,10 +38,8 @@ public class Server {
     }
 
     private static void startServer() {
-        // загружаем из файла collection.txt изначальные значения
         LabWorkTreeSetManager manager = LabWorkTreeSetManager.getInstance();
         manager.fetchInitialDataFromDb();
-//        new XmlCollectionLoader(manager, "collection.txt").load();
 
         int port = ConnectionContext.getPort();
 
