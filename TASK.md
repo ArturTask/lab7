@@ -100,6 +100,8 @@
 3) удалить [resources](server-socket%2Fsrc%2Fmain%2Fresources)
 4) удалить [XmlCollectionLoader](server-socket%2Fsrc%2Fmain%2Fjava%2Fru%2Fitmo%2Fsocket%2Fserver%2Fmanager%2FXmlCollectionLoader.java)
 5) ветка `feature/parallel-send-read` написана по заданию лабы но по-моему можно написать лучше
+6) обращение к базе в циклах и вообще работа с базой - это ужас, нагенерил chatGPT от в ас не просят оптимальности так что сойдет, но знайте на будущее - никаких обращений к бд в цикле, лучше вытянуть сразу все сущности или написать запрос с join, зависит от задачи конечно но в большинстве случаев так
+7) SQLRequestException почти нигде не обрабатывается, и его логи тупо пропадают, если у вас нарушения при add/ update то смотрите туда 
 
 
 

@@ -90,6 +90,7 @@ public class LabWorkTreeSetManager {
         while (iterator.hasNext()) {
             LabWork lw = iterator.next();
             if (lw.getId() == id) {
+                labWorksDao.remove(id);
                 iterator.remove();
                 newElement.setId(id);
                 return tryUpdateInDb(newElement) && labWorks.add(newElement);
@@ -102,7 +103,12 @@ public class LabWorkTreeSetManager {
     // Удаление элемента по id
     public synchronized boolean removeById(long id) {
         SortedSet<LabWork> labWorks = getCollectionOfCurrentUser();
-        return labWorks.removeIf(lw -> lw.getId() == id);
+        boolean removeIf = labWorks.removeIf(lw -> lw.getId() == id);
+        if (removeIf){
+            labWorksDao.remove(id);
+        }
+        return removeIf;
+
     }
 
     // Очистка всей коллекции
