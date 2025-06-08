@@ -17,12 +17,12 @@ public class RemoveLower implements ServerCommand {
         if (filtered.isEmpty()) {
             oos.writeUTF("Нет элементов с area меньше " + area);
         } else {
-            while (!filtered.isEmpty()){
-                Flat flat = filtered.get(0);
+            StringBuilder answer = new StringBuilder();
+            filtered.forEach(flat -> {
                 list.remove(flat);
-                StringBuilder answer = new StringBuilder("Квартира с площадью: " + flat.getArea() + " была удалена");
-                oos.writeUTF(answer.toString());
-            }
+                answer.append("\nКвартира с id ").append(flat.getId()).append(" была удалена");
+            });
+            oos.writeUTF(answer.toString());
         }
     }
 }
