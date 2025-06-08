@@ -71,12 +71,17 @@ public class Storage {
     // Удаление элемента по id
     public boolean removeById(long id) {
         List<Flat> list = getCollectionOfCurrentUser();
-        return list.removeIf(lw -> lw.getId() == id);
+        boolean removeIf = list.removeIf(lw -> lw.getId() == id);
+        if (removeIf) {
+            flatDao.remove(id);
+        }
+        return removeIf;
     }
 
     // Удаление элемента
     public boolean remove(Flat flat) {
         List<Flat> list = getCollectionOfCurrentUser();
+        flatDao.remove(flat.getId());
         return list.remove(flat);
     }
 
