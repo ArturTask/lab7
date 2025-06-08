@@ -115,11 +115,10 @@ public class FlatDao {
         }
     }
 
-    public boolean remove(long id, int userId) {
-        String sql = "DELETE FROM flats WHERE id=? AND user_id=?";
+    public boolean remove(long id) {
+        String sql = "DELETE FROM flats WHERE id=?";
         try (PreparedStatement st = DbUserContext.getConnection().prepareStatement(sql)) {
             st.setLong(1, id);
-            st.setInt(2, userId);
             return st.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new SqlRequestException(e);
