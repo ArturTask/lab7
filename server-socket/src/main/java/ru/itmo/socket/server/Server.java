@@ -38,10 +38,8 @@ public class Server {
     }
 
     private static void startServer() {
-        // загружаем из файла collection.txt изначальные значения
         Storage storage = Storage.getInstance();
         storage.fetchInitialDataFromDb();
-//        new XmlCollectionLoader(manager, "collection.txt").load();
 
         int port = ConnectionContext.getPort();
 
