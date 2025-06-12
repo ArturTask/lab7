@@ -3,6 +3,7 @@ package ru.itmo.socket.common.util;
 import ru.itmo.socket.common.dto.UserDto;
 import ru.itmo.socket.common.entity.*;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Scanner;
 
@@ -76,6 +77,7 @@ public class LabWorkInputHelper {
         labWork.setMinimalPoint(inputMinimalPoint(scanner));
         labWork.setDifficulty(inputDifficulty(scanner));
         labWork.setAuthor(inputAuthor(scanner));
+        labWork.setCreationDate(LocalDate.now());
 
         return labWork;
     }
